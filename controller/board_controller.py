@@ -43,6 +43,8 @@ class BoardController:
         self.board = Board()
         self.cursorPosition = 1
         self.remainingMoves = list(throwDice())
+        self.usedDice = []
+        self.lastMoves = []
 
         self.players = {
                 'white': Player('white', -1),
@@ -73,6 +75,21 @@ class BoardController:
             self.currentPlayer = self.players['black']
         else:
             self.currentPlayer = self.players['white']
+        self.lastMoves.clear()
+        self.usedDice.clear()
+        self.remainingMoves = list(throwDice())
+
+    def _undo(self):
+        if not self.lastMoves:
+            return
+
+        fromPos, toPos = self.lastMoves.pop()
+        self.board.moveTile(toPos, fromPos)
+
+        if self.usedDice:
+            self.remainingMoves.insert(0, self.usedDice.pop())
+        
+
 
     def _endOrContinueTurn(self):
         self._switchPlayer()
@@ -82,7 +99,17 @@ class BoardController:
         tiles = self.board.getTilesAt(position)
         if not tiles:
             return False
-        return tiles[0].color == self.currentPlayer.color
+        return tiles[-1].color == self.currentPlayer.color
+
+    def _hitTile(self, position):
+        tiles = self.board.getTilesAt(position)
+        if not len(tiles) == 1:
+            return
+        if tiles[-1].color == 'white':
+            self.board.moveTile(position, 25)
+        else:
+            self.board.moveTile((position, 0))
+        
 
     def _selectColumn(self):
         if not self.remainingMoves:
@@ -96,25 +123,29 @@ class BoardController:
 
         toPos = fromPos + (steps * self.currentPlayer.direction)
 
-        if 1 > toPos > 24:
+        if not 1 <= toPos <= 25:
             return
 
         self.board.moveTile(fromPos, toPos)
-        self.remainingMoves.pop(0)
+        self.usedDice.append(self.remainingMoves.pop(0))
+        self.lastMoves.append((fromPos, toPos))
 
     def start(self):
         while self.running:
             self._clearScreen()
             renderBoard(self.board, self.cursorPosition, self.remainingMoves, self.firstDiceWhite, self.firstDiceBlack)
 
-            key = getKey()
+            key = getKey().lower()
             if key in ('w', 'a', 's', 'd'):
                 self._moveCursor(key)
             elif key in ('\r', '\n') and self.remainingMoves:
                 self._selectColumn()
+            elif key == 'r':
+                self.remainingMoves.reverse()
+            elif key == 'u':
+                self._undo()
             elif key in ('\r', '\n') and not self.remainingMoves:
                 self._switchPlayer()
-                self.remainingMoves = list(throwDice())
             elif key in ('\x1B', '\033'):
                 self.running = False
         

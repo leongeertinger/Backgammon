@@ -3,12 +3,14 @@ from model.tile import Tile
 class Board:
     def __init__(self):
         self.board = {
+                0:[],
                 1: [], 2: [], 3: [], 4: [],
                 5: [], 6: [], 7: [], 8: [],
                 9: [], 10: [], 11: [], 12: [],
                 13: [], 14: [], 15: [], 16: [],
                 17: [], 18: [], 19: [], 20: [],
-                21: [], 22: [], 23: [], 24: []}
+                21: [], 22: [], 23: [], 24: [],
+                25: []}
         self._populateBoard()
     
     def _populateBoard(self):
@@ -27,7 +29,7 @@ class Board:
             self.board[position].extend(Tile(color) for _ in range(amount))
 
     def moveTile(self, oldPos, newPos):
-        if 1 > newPos > 24:
+        if not 0 <= newPos <= 25:
             return
         self.board[newPos].append(self.board[oldPos].pop())
 
