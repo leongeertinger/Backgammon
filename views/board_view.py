@@ -14,7 +14,13 @@ def _getColumn(board, position, fromTop = False, height = 5):
 
     return column
 
-def renderBoard(board):
+def _renderCursorTop():
+    pass
+
+def _renderCursorBottom():
+    pass
+
+def renderBoard(board, cursorPos, dice):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]
