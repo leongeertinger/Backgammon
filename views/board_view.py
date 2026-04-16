@@ -14,12 +14,29 @@ def _getColumn(board, position, fromTop = False, height = 5):
 
     return column
 
-def _renderCursorTop():
-    pass
+def _renderCursorTop(cursorPos):
+    positions = [24, 23, 22, 21, 20, 19, None, 18, 17, 16, 15, 14, 13]
+    cursorRow = "     "
+    for pos in positions:
+        if pos == None:
+            cursorRow += "         " 
+        elif pos == cursorPos:
+            cursorRow += "  ▼  "
+        else:
+            cursorRow += "     "
+    return cursorRow
 
-def _renderCursorBottom():
-    pass
-
+def _renderCursorBottom(cursorPos):
+    positions = [1, 2, 3, 4, 5, 6, None, 7, 8, 9, 10, 11, 12]
+    cursorRow = "     "
+    for pos in positions:
+        if pos == None:
+            cursorRow += "         " 
+        elif pos == cursorPos:
+            cursorRow += "  ▲  "
+        else:
+            cursorRow += "     "
+    return cursorRow
 def renderBoard(board, cursorPos, dice):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
@@ -35,7 +52,8 @@ def renderBoard(board, cursorPos, dice):
     for position in bottomLeftPositions + bottomRightPositions:
         bottomColumns[position] = _getColumn(board, position)
 
-    print("    OFF:") 
+    print("    OFF:")
+    print(_renderCursorTop(cursorPos))
     print("    ┌────┬────┬────┬────┬────┬────┬────────┬────┬────┬────┬────┬────┬────┐")
     print("    │ 24 │ 23 │ 22 │ 21 │ 20 │ 19 │        │ 18 │ 17 │ 16 │ 15 │ 14 │ 13 │")
     print("    ├────┼────┼────┼────┼────┼────┼────────┼────┼────┼────┼────┼────┼────┤")
@@ -55,6 +73,11 @@ def renderBoard(board, cursorPos, dice):
     print("    ├────┼────┼────┼────┼────┼────┼────────┼────┼────┼────┼────┼────┼────┤")
     print("    │  1 │  2 │  3 │  4 │  5 │  6 │        │  7 │  8 │  9 │ 10 │ 11 │ 12 │")
     print("    └────┴────┴────┴────┴────┴────┴────────┴────┴────┴────┴────┴────┴────┘")
+    print(_renderCursorBottom(cursorPos))
     print("    OFF:")
+    print("                            W, A, S, D = Move cursor                      ")
+    print("                                   R = Undo                               ")
+    print("                          Enter = Select piece to move                    ")
+    print("                                  ESC = Quit                              ")
 
 
