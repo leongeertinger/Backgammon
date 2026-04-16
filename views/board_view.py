@@ -5,7 +5,8 @@ def _getColumn(board, position, fromTop = False, height = 5):
     tiles = board.getTilesAt(position)
     visibleTiles = tiles[:height]
     column = [_getTileColor(tile) for tile in visibleTiles]
-
+    if len(tiles) > 5:
+        column[4] = f" {len(tiles)} " if len(tiles) > 9 else f" 0{len(tiles)} "  
     while len(column) < height:
         column.append("    ")
 
@@ -37,7 +38,7 @@ def _renderCursorBottom(cursorPos):
         else:
             cursorRow += "     "
     return cursorRow
-def renderBoard(board, cursorPos, dice):
+def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]
@@ -75,9 +76,11 @@ def renderBoard(board, cursorPos, dice):
     print("    └────┴────┴────┴────┴────┴────┴────────┴────┴────┴────┴────┴────┴────┘")
     print(_renderCursorBottom(cursorPos))
     print("    OFF:")
-    print("                            W, A, S, D = Move cursor                      ")
-    print("                                   R = Undo                               ")
-    print("                          Enter = Select piece to move                    ")
-    print("                                  ESC = Quit                              ")
+    print("W, A, S, D = Move cursor".rjust(51))
+    print("U = Undo".rjust(44))
+    print("R = Reverse order of dice".rjust(44))
+    print("E = Double".rjust(44))
+    print("Enter = Select piece to move".rjust(60))
+    print("ESC = Quit".rjust(44))
 
 

@@ -1,2 +1,0 @@
-blackTileView = '○○'
-whiteTileView = '●●'

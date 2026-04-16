@@ -27,9 +27,11 @@ class Board:
             self.board[position].extend(Tile(color) for _ in range(amount))
 
     def moveTile(self, oldPos, newPos):
+        if 1 > newPos > 24:
+            return
         self.board[newPos].append(self.board[oldPos].pop())
 
     def getTilesAt(self, position) -> list[object]:
         if position not in self.board:
-            raise ValueError(f'Ogiltig position: {position}')
+            raise ValueError(f'Invalid position: {position}')
         return self.board[position]
