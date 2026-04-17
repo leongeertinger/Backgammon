@@ -16,27 +16,23 @@ def _getColumn(board, position, fromTop = False, height = 5):
     return column
 
 def _renderCursorTop(cursorPos):
-    positions = [24, 23, 22, 21, 20, 19, None, 18, 17, 16, 15, 14, 13]
+    positions = [24, 23, 22, 21, 20, 19, 0, 18, 17, 16, 15, 14, 13]
     cursorRow = "     "
     for pos in positions:
-        if pos == None:
-            cursorRow += "         " 
-        elif pos == cursorPos:
-            cursorRow += "  ▼  "
+        if pos == 0:
+            cursorRow += "    ▼    " if pos == cursorPos else "         " 
         else:
-            cursorRow += "     "
+            cursorRow += "  ▼  " if pos == cursorPos else "     "
     return cursorRow
 
 def _renderCursorBottom(cursorPos):
-    positions = [1, 2, 3, 4, 5, 6, None, 7, 8, 9, 10, 11, 12]
+    positions = [1, 2, 3, 4, 5, 6, 25, 7, 8, 9, 10, 11, 12]
     cursorRow = "     "
     for pos in positions:
-        if pos == None:
-            cursorRow += "         " 
-        elif pos == cursorPos:
-            cursorRow += "  ▲  "
+        if pos == 25:
+            cursorRow += "    ▲    " if pos == cursorPos else "         "
         else:
-            cursorRow += "     "
+            cursorRow += "  ▲  " if pos == cursorPos else "     "
     return cursorRow
 def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
@@ -46,6 +42,8 @@ def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
 
     topColumns = {}
     bottomColumns = {}
+    topBar = _getColumn(board, 0, fromTop=True)
+    bottomBar = _getColumn(board, 25)
 
     for position in topLeftPositions + topRightPositions:
         topColumns[position] = _getColumn(board, position, fromTop=True)
@@ -62,14 +60,14 @@ def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
     for row in range(5):
         leftSide = "".join(f"│{topColumns[pos][row]}" for pos in topLeftPositions)
         rightSide = "".join(f"│{topColumns[pos][row]}" for pos in topRightPositions)
-        print(f"    {leftSide}│        {rightSide}│")
+        print(f"    {leftSide}│  {topBar[row]}  {rightSide}│")
 
     print("    ├────┼────┼────┼────┼────┼────┼────────┼────┼────┼────┼────┼────┼────┤")
 
     for row in range(5):
         leftSide = "".join(f"│{bottomColumns[pos][row]}" for pos in bottomLeftPositions)
         rightSide = "".join(f"│{bottomColumns[pos][row]}" for pos in bottomRightPositions)
-        print(f"    {leftSide}│        {rightSide}│")
+        print(f"    {leftSide}│  {bottomBar[row]}  {rightSide}│")
 
     print("    ├────┼────┼────┼────┼────┼────┼────────┼────┼────┼────┼────┼────┼────┤")
     print("    │  1 │  2 │  3 │  4 │  5 │  6 │        │  7 │  8 │  9 │ 10 │ 11 │ 12 │")
