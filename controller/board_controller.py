@@ -56,7 +56,10 @@ class BoardController:
         
         self.currentPlayer = self.players[
                 self._calculateStartingPlayer(self.firstDiceWhite, self.firstDiceBlack)]
-
+        if self.currentPlayer.color == 'white':
+            self.currentPlayersBar = 25
+        else:
+            self.currentPlayersBar = 0
         self.doublingcube = DoublingCube()
         
         self.running = True
@@ -71,11 +74,13 @@ class BoardController:
     def _calculateStartingPlayer(self, diceWhite, diceBlack):
         return 'white' if (diceWhite[0] + diceWhite[1]) > (diceBlack[0] + diceBlack[1]) else 'black'
 
-    def _switchPlayer(self):
+    def _endTurn(self):
         if self.currentPlayer.color == 'white':
             self.currentPlayer = self.players['black']
+            self.currentPlayersBar = 0
         else:
             self.currentPlayer = self.players['white']
+            self.currentPlayersBar = 25
         self.lastMoves.clear()
         self.usedDice.clear()
         self.remainingMoves = list(throwDice())
@@ -103,11 +108,6 @@ class BoardController:
         if self.usedDice:
             self.usedDice.pop()
         
-
-
-    def _endOrContinueTurn(self):
-        self._switchPlayer()
-        self.dice = throwDice()
 
     def _columnBelongsToCurrentPlayer(self, position):
         tiles = self.board.getTilesAt(position)
@@ -141,10 +141,24 @@ class BoardController:
                 'position': position
                 }
 
+    def _checkForBlockedColumn(self, position):
+        tiles = self.board.getTilesAt(position)
         
+        if len(tiles) > 1 and tiles[-1].color != self.currentPlayer.color:
+            return True
+        return False
+
+    def _checkValidEndGameMove(self, fromPos, toPos):
+        pass
 
     def _selectColumn(self):
         if not self.remainingMoves:
+            return
+
+        endGame = self.board.checkGameState(self.currentPlayer)
+
+        barredCheckers = self.board.checkBarredCheckers(self.currentPlayer)
+        if barredCheckers and self.cursorPosition != self.currentPlayersBar:
             return
 
         diceValue = self.remainingMoves[0]
@@ -154,15 +168,24 @@ class BoardController:
             return
 
         toPos = fromPos + (diceValue * self.currentPlayer.direction)
-
-        if not 1 <= toPos <= 24:
+        
+        if not endGame and not 1 <= toPos <= 24:
+            return
+        if self._checkForBlockedColumn(toPos):
             return
 
         hitData = None
         if self._getHittableTile(toPos):
             hitData = self._hitTile(toPos)
-
-        self.board.moveTile(fromPos, toPos)
+        
+        if endGame and (toPos < 0 or toPos > 25):
+            if self._checkValidEndGameMove(fromPos, toPos):
+                self.board.moveTile(fromPos, toPos)
+                self.currentPlayer.tilesTakenOut += 1
+            else:
+                return
+        else: 
+            self.board.moveTile(fromPos, toPos)
 
         moveData = {
                 'from': fromPos,
@@ -189,7 +212,7 @@ class BoardController:
             elif key == 'u':
                 self._undo()
             elif key in ('\r', '\n') and not self.remainingMoves:
-                self._switchPlayer()
+                self._endTurn()
             elif key in ('\x1B', '\033'):
                 self.running = False
         

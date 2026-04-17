@@ -12,8 +12,10 @@ class Board:
                 21: [], 22: [], 23: [], 24: [],
                 25: []}
         self._populateBoard()
+        self.zone = [[1, 2, 3, 4, 5, 6], [7, 8, 9, 10, 11, 12], 
+                    [13, 14, 15, 16, 17, 18], [19, 20, 21, 22, 23, 24]]
     
-    def _populateBoard(self):
+    def _populateBoard(self) -> None:
         
         startingPositions = {
                 1: ('black', 2),
@@ -28,12 +30,47 @@ class Board:
         for position, (color, amount) in startingPositions.items():
             self.board[position].extend(Tile(color) for _ in range(amount))
 
-    def moveTile(self, oldPos, newPos):
+    def moveTile(self, oldPos, newPos) -> None:
+        if not 0 <= oldPos <= 25:
+            return
         if not 0 <= newPos <= 25:
             return
+        if not self.board[oldPos]:
+            return
+
         self.board[newPos].append(self.board[oldPos].pop())
 
     def getTilesAt(self, position) -> list[object]:
         if position not in self.board:
             raise ValueError(f'Invalid position: {position}')
         return self.board[position]
+
+    def getColorsInZone(self, zone) -> dict[str, int]:
+        
+        tileZone = self.zone[zone - 1]
+        tiles = {'white': 0, 'black': 0}
+        for i in range(tileZone[0], tileZone[-1]):
+            for tile in self.board[i]:
+                tiles[tile.color] += 1
+        return tiles
+
+    def checkBarredCheckers(self, player):
+        player = player.color
+        if player == 'white' and self.getTilesAt(25):
+            return True
+        elif player == 'black' and self.getTilesAt(0):
+            return True
+        else:
+            return False
+
+    def checkGameState(self, player):
+        zoneOne = self.getColorsInZone(1)
+        zoneFour = self.getColorsInZone(4)
+        if player.color == 'white' and zoneOne['white'] == 15:
+            return True
+        elif player.color == 'black' and zoneFour['black'] == 15:
+            return True
+        else:
+            return False
+
+
