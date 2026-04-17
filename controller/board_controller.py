@@ -35,8 +35,7 @@ navigation = {
     12: {"a": 11, "d": 12, "w": 13},
 }
 
-def _calculateStartingPlayer(diceWhite, diceBlack):
-    return 'white' if (diceWhite[0] + diceWhite[1]) > (diceBlack[0] + diceBlack[1]) else 'black'
+
 
 class BoardController:
     def __init__(self):
@@ -83,11 +82,24 @@ class BoardController:
         if not self.lastMoves:
             return
 
-        fromPos, toPos = self.lastMoves.pop()
+        moveData = self.lastMoves.pop()
+
+        fromPos = moveData['from']
+        toPos = moveData['to']
+        diceValue = moveData['dice']
+        hitData = moveData['hit']
+
         self.board.moveTile(toPos, fromPos)
+        self.remainingMoves.insert(0, diceValue)
+
+        if hitData:
+            if hitData['bar'] == 25: #White bar
+                self.board.moveTile(25, hitData['position'])
+            else:
+                self.board.moveTile(0, hitData['position'])
 
         if self.usedDice:
-            self.remainingMoves.insert(0, self.usedDice.pop())
+            self.usedDice.pop()
         
 
 
@@ -101,34 +113,64 @@ class BoardController:
             return False
         return tiles[-1].color == self.currentPlayer.color
 
+    def _getHittableTile(self, position):
+        tiles = self.board.getTilesAt(position)
+        if len(tiles) == 1 and tiles[-1].color != self.currentPlayer.color:
+            return tiles[-1]
+        else:
+            return None
+
     def _hitTile(self, position):
         tiles = self.board.getTilesAt(position)
         if not len(tiles) == 1:
             return
+        
+        hitTile = tiles[-1]
+        
         if tiles[-1].color == 'white':
-            self.board.moveTile(position, 25)
+            self.board.moveTile(position, 25)#Send to white bar.
+            bar = 25#Used for undo function.
         else:
-            self.board.moveTile((position, 0))
+            self.board.moveTile(position, 0)#Send to black bar.
+            bar = 0
+        return {
+                'tile': hitTile,
+                'bar': bar,
+                'position': position
+                }
+
         
 
     def _selectColumn(self):
         if not self.remainingMoves:
             return
 
-        steps = self.remainingMoves[0]
+        diceValue = self.remainingMoves[0]
         fromPos = self.cursorPosition
         
         if not self._columnBelongsToCurrentPlayer(fromPos):
             return
 
-        toPos = fromPos + (steps * self.currentPlayer.direction)
+        toPos = fromPos + (diceValue * self.currentPlayer.direction)
 
         if not 1 <= toPos <= 25:
             return
 
+        hitData = None
+        if self._getHittableTile(toPos):
+            hitData = self._hitTile(toPos)
+
         self.board.moveTile(fromPos, toPos)
+
+        moveData = {
+                'from': fromPos,
+                'to': toPos,
+                'dice': diceValue,
+                'hit': hitData
+                }
+
         self.usedDice.append(self.remainingMoves.pop(0))
-        self.lastMoves.append((fromPos, toPos))
+        self.lastMoves.append(moveData)
 
     def start(self):
         while self.running:
