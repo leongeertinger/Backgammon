@@ -30,6 +30,18 @@ class Board:
         for position, (color, amount) in startingPositions.items():
             self.board[position].extend(Tile(color) for _ in range(amount))
 
+    def getCurrentPipCount(self):
+        whitePipCount = 0
+        blackPipCount = 0
+        for i in self.board:
+            for checker in self.board[i]:
+                if checker.color == 'white':
+                    whitePipCount += i
+                elif checker.color == 'black':
+                    blackPipCount += 25 - i
+        return whitePipCount, blackPipCount
+
+
     def moveTile(self, oldPos, newPos) -> None:
         if not 0 <= oldPos <= 25:
             return
@@ -39,6 +51,11 @@ class Board:
             return
 
         self.board[newPos].append(self.board[oldPos].pop())
+
+    def bearOffTile(self, position):
+        if not self.getTilesAt(position):
+            return
+        self.board[position].pop()
 
     def getTilesAt(self, position) -> list[object]:
         if position not in self.board:
@@ -72,5 +89,15 @@ class Board:
             return True
         else:
             return False
+
+    def calculatePipCount(self, player):
+        pips = {
+                'white': 0,
+                'black': 0
+                }
+
+        for i in self.board:
+            for tile in self.board[i]:
+                pass
 
 

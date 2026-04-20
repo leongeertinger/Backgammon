@@ -34,7 +34,7 @@ def _renderCursorBottom(cursorPos):
         else:
             cursorRow += "  ▲  " if pos == cursorPos else "     "
     return cursorRow
-def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
+def renderBoard(board, players, cursorPos, cube, dice, firstDiceWhite, firstDiceBlack, getPipCount, winner):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]
@@ -45,13 +45,16 @@ def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
     topBar = _getColumn(board, 0, fromTop=True)
     bottomBar = _getColumn(board, 25)
 
+    pipCountWhite, pipCountBlack = getPipCount()
+
     for position in topLeftPositions + topRightPositions:
         topColumns[position] = _getColumn(board, position, fromTop=True)
 
     for position in bottomLeftPositions + bottomRightPositions:
         bottomColumns[position] = _getColumn(board, position)
 
-    print("    OFF:")
+    print(f"   Pip: {pipCountBlack}")
+    print(f"    OFF: {players['black'].tilesTakenOut}")
     print(_renderCursorTop(cursorPos))
     print("    ┌────┬────┬────┬────┬────┬────┬────────┬────┬────┬────┬────┬────┬────┐")
     print("    │ 24 │ 23 │ 22 │ 21 │ 20 │ 19 │        │ 18 │ 17 │ 16 │ 15 │ 14 │ 13 │")
@@ -73,7 +76,8 @@ def renderBoard(board, cursorPos, dice, firstDiceWhite, firstDiceBlack):
     print("    │  1 │  2 │  3 │  4 │  5 │  6 │        │  7 │  8 │  9 │ 10 │ 11 │ 12 │")
     print("    └────┴────┴────┴────┴────┴────┴────────┴────┴────┴────┴────┴────┴────┘")
     print(_renderCursorBottom(cursorPos))
-    print("    OFF:")
+    print(f"    OFF: {players['white'].tilesTakenOut}")
+    print(f"   Pip: {pipCountWhite}")
     print("W, A, S, D = Move cursor".rjust(51))
     print("U = Undo".rjust(44))
     print("R = Reverse order of dice".rjust(44))

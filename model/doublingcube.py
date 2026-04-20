@@ -4,6 +4,8 @@ class DoublingCube:
         self.playerLastDoubled = None
 
     def double(self, player):
+        if player == self.playerLastDoubled:
+            return
         if self.value == 1:
             self.value = 2
         else: 

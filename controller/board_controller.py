@@ -61,6 +61,8 @@ class BoardController:
         else:
             self.currentPlayersBar = 0
         self.doublingcube = DoublingCube()
+
+        self.winner = ''
         
         self.running = True
 
@@ -75,6 +77,9 @@ class BoardController:
         return 'white' if (diceWhite[0] + diceWhite[1]) > (diceBlack[0] + diceBlack[1]) else 'black'
 
     def _endTurn(self):
+        if self.currentPlayer.tilesTakenOut == 15:
+            self.winner = self.currentPlayer.color
+            return
         if self.currentPlayer.color == 'white':
             self.currentPlayer = self.players['black']
             self.currentPlayersBar = 0
@@ -149,7 +154,18 @@ class BoardController:
         return False
 
     def _checkValidEndGameMove(self, fromPos, toPos):
-        pass
+        if self.currentPlayer.color == 'white' and toPos > 25:
+            for i in range(fromPos - 1, 19 - 1, -1):
+                if self._columnBelongsToCurrentPlayer(i):
+                    return False
+                else:
+                    return True
+        if self.currentPlayer.color == 'black' and toPos < 0:
+            for i in range(fromPos + 1, 6 + 1):
+                if self._columnBelongsToCurrentPlayer(i):
+                    return False
+                else:
+                    return True
 
     def _selectColumn(self):
         if not self.remainingMoves:
@@ -178,9 +194,9 @@ class BoardController:
         if self._getHittableTile(toPos):
             hitData = self._hitTile(toPos)
         
-        if endGame and (toPos < 0 or toPos > 25):
-            if self._checkValidEndGameMove(fromPos, toPos):
-                self.board.moveTile(fromPos, toPos)
+        if endGame and (toPos <= 0 or toPos >= 25):
+            if self._checkValidEndGameMove(fromPos, toPos, self.currentPlayer):
+                self.board.bearOffTile(fromPos)
                 self.currentPlayer.tilesTakenOut += 1
             else:
                 return
@@ -200,7 +216,8 @@ class BoardController:
     def start(self):
         while self.running:
             self._clearScreen()
-            renderBoard(self.board, self.cursorPosition, self.remainingMoves, self.firstDiceWhite, self.firstDiceBlack)
+            renderBoard(self.board, self.players, self.cursorPosition, self.doublingcube, self.remainingMoves, 
+                        self.firstDiceWhite, self.firstDiceBlack, self.board.getCurrentPipCount, self.winner)
 
             key = getKey().lower()
             if key in ('w', 'a', 's', 'd'):
