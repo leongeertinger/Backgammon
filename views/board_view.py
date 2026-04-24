@@ -5,7 +5,7 @@ def _getColumn(board, position, fromTop = False, height = 5):
     tiles = board.getTilesAt(position)
     visibleTiles = tiles[:height]
     column = [_getTileColor(tile) for tile in visibleTiles]
-    if len(tiles) > 5:
+    if len(tiles) > height:
         column[4] = f" {len(tiles)} " if len(tiles) > 9 else f" 0{len(tiles)} "  
     while len(column) < height:
         column.append("    ")
@@ -34,7 +34,7 @@ def _renderCursorBottom(cursorPos):
         else:
             cursorRow += "  ▲  " if pos == cursorPos else "     "
     return cursorRow
-def renderBoard(board, players, cursorPos, cube, dice, firstDiceWhite, firstDiceBlack, getPipCount, winner):
+def renderBoard(board, players, getCurrentPlayer, cursorPos, cube, dice, firstDiceWhite, firstDiceBlack, getPipCount, getWinner):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]
@@ -44,7 +44,9 @@ def renderBoard(board, players, cursorPos, cube, dice, firstDiceWhite, firstDice
     bottomColumns = {}
     topBar = _getColumn(board, 0, fromTop=True)
     bottomBar = _getColumn(board, 25)
-
+    
+    currentPlayer = getCurrentPlayer()
+    winner = getWinner()#'white' or 'black'
     pipCountWhite, pipCountBlack = getPipCount()
 
     for position in topLeftPositions + topRightPositions:
@@ -55,6 +57,9 @@ def renderBoard(board, players, cursorPos, cube, dice, firstDiceWhite, firstDice
 
     print(f"   Pip: {pipCountBlack}")
     print(f"    OFF: {players['black'].tilesTakenOut}")
+    print(f"                                   {dice if currentPlayer.color == 'black' else ''}")
+    if winner == 'black':
+        print("Winner: black".rjust(51))
     print(_renderCursorTop(cursorPos))
     print("    ┌────┬────┬────┬────┬────┬────┬────────┬────┬────┬────┬────┬────┬────┐")
     print("    │ 24 │ 23 │ 22 │ 21 │ 20 │ 19 │        │ 18 │ 17 │ 16 │ 15 │ 14 │ 13 │")
@@ -76,13 +81,16 @@ def renderBoard(board, players, cursorPos, cube, dice, firstDiceWhite, firstDice
     print("    │  1 │  2 │  3 │  4 │  5 │  6 │        │  7 │  8 │  9 │ 10 │ 11 │ 12 │")
     print("    └────┴────┴────┴────┴────┴────┴────────┴────┴────┴────┴────┴────┴────┘")
     print(_renderCursorBottom(cursorPos))
+    if winner == 'white':
+        print("Winner: white".rjust(51))
+    print(f"                                   {dice if currentPlayer.color =='white' else ''}")
     print(f"    OFF: {players['white'].tilesTakenOut}")
     print(f"   Pip: {pipCountWhite}")
-    print("W, A, S, D = Move cursor".rjust(51))
-    print("U = Undo".rjust(44))
-    print("R = Reverse order of dice".rjust(44))
-    print("E = Double".rjust(44))
-    print("Enter = Select piece to move".rjust(60))
-    print("ESC = Quit".rjust(44))
+    print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')
+    print("[U] = Undo")
+    print("[R] = Reverse order of dice".rjust(45), end=' | ')
+    print("[E] = Double")
+    print("[Enter] = Select piece to move".rjust(45), end=' | ')
+    print("[ESC] = Quit")
 
 

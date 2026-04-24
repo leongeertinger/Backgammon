@@ -66,7 +66,7 @@ class Board:
         
         tileZone = self.zone[zone - 1]
         tiles = {'white': 0, 'black': 0}
-        for i in range(tileZone[0], tileZone[-1]):
+        for i in range(tileZone[0], tileZone[-1] + 1):
             for tile in self.board[i]:
                 tiles[tile.color] += 1
         return tiles
@@ -83,21 +83,10 @@ class Board:
     def checkGameState(self, player):
         zoneOne = self.getColorsInZone(1)
         zoneFour = self.getColorsInZone(4)
-        if player.color == 'white' and zoneOne['white'] == 15:
-            return True
-        elif player.color == 'black' and zoneFour['black'] == 15:
-            return True
-        else:
-            return False
+        if player.color == 'white': 
+            return zoneOne['white'] + player.tilesTakenOut == 15
+        elif player.color == 'black':
+            return zoneFour['black'] + player.tilesTakenOut == 15
 
-    def calculatePipCount(self, player):
-        pips = {
-                'white': 0,
-                'black': 0
-                }
-
-        for i in self.board:
-            for tile in self.board[i]:
-                pass
 
 
