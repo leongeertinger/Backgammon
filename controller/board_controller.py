@@ -111,22 +111,25 @@ class BoardController:
                 moveSequences.append(sequence)
                 return
 
-            foundMove = False
+            legalMovesLeft = False
 
-            for i, die in enumerate(remainingDice):
+            for die in set(remainingDice): #Use set here to avoid trying the same die 
+                #on the same board. Since doubles reversed doesnt change the dice
+                #it is unnecessary to use enumerate()
                 legalMoves = self.getAllLegalSingleMoves(board, player, die)
 
                 for move in legalMoves:
-                    foundMove = True
+                    legalMovesLeft = True
 
                     newBoard = self._simulateMove(board, player, move)
                     if newBoard == None:
                         continue
-                    newRemainingDice = remainingDice[:i] + remainingDice[i + 1:]
+                    newRemainingDice = list(remainingDice)
+                    newRemainingDice.remove(die)
 
                     depthSearch(newBoard, player, newRemainingDice, sequence + [move])
             
-            if not foundMove:
+            if not legalMovesLeft:
                 moveSequences.append(sequence)
 
         depthSearch(board, player, dice, [])
