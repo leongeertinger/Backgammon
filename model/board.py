@@ -27,8 +27,21 @@ class Board:
                 19: ('black', 5),
                 24: ('white', 2)
                 }
+
         for position, (color, amount) in startingPositions.items():
             self.board[position].extend(Tile(color) for _ in range(amount))
+
+    def clearBoard(self, board):
+        for pos in range(26):
+            board.board[pos].clear()
+
+    def _setupDebugLogicBoard(self, board):
+        self.clearBoard(board)
+        board.board[14].append(Tile('white'))
+        board.board[13].append(Tile('white'))
+        board.board[8].extend(Tile('black') for _ in range(2))
+        board.board[7].extend(Tile('black') for _ in range(2))
+        board.board[5].extend(Tile('black') for _ in range(2))
 
     def getCurrentPipCount(self):
         whitePipCount = 0
@@ -57,7 +70,7 @@ class Board:
             return
         self.board[position].pop()
 
-    def getTilesAt(self, position) -> list[object]:
+    def getTilesAt(self, position) -> list[Tile]:
         if position not in self.board:
             raise ValueError(f'Invalid position: {position}')
         return self.board[position]

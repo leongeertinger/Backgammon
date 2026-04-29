@@ -4,8 +4,7 @@ class Player:
         self.color = color
         self.direction = direction #-1 or +1
         self.pipCount = 0
-        self.canTakeTurn = True
         self.tilesTakenOut = 0
-        self.tilesHit = 0
+        self.showIllegalMoveMessage = False
         
 

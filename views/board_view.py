@@ -49,6 +49,16 @@ def renderBoard(board, players, getCurrentPlayer, cursorPos, cube, dice, firstDi
     winner = getWinner()#'white' or 'black'
     pipCountWhite, pipCountBlack = getPipCount()
 
+    blackIllegal = (
+            currentPlayer.color == 'black'
+            and currentPlayer.showIllegalMoveMessage
+            )
+    whiteIllegal = (
+            currentPlayer.color == 'white'
+            and currentPlayer.showIllegalMoveMessage
+            )
+    illegalMessage = 'You must play all dice if possible.'.rjust(47)
+
     for position in topLeftPositions + topRightPositions:
         topColumns[position] = _getColumn(board, position, fromTop=True)
 
@@ -56,10 +66,11 @@ def renderBoard(board, players, getCurrentPlayer, cursorPos, cube, dice, firstDi
         bottomColumns[position] = _getColumn(board, position)
 
     print(f"   Pip: {pipCountBlack}")
-    print(f"    OFF: {players['black'].tilesTakenOut}")
+    print(f"    OFF: {players['black'].tilesTakenOut}", end='')    
+    print(illegalMessage if blackIllegal else '')
     print(f"                                   {dice if currentPlayer.color == 'black' else ''}")
     if winner == 'black':
-        print("Winner: black".rjust(51))
+        print("Winner: black".rjust(45))
     print(_renderCursorTop(cursorPos))
     print("    ┌────┬────┬────┬────┬────┬────┬────────┬────┬────┬────┬────┬────┬────┐")
     print("    │ 24 │ 23 │ 22 │ 21 │ 20 │ 19 │        │ 18 │ 17 │ 16 │ 15 │ 14 │ 13 │")
@@ -82,9 +93,10 @@ def renderBoard(board, players, getCurrentPlayer, cursorPos, cube, dice, firstDi
     print("    └────┴────┴────┴────┴────┴────┴────────┴────┴────┴────┴────┴────┴────┘")
     print(_renderCursorBottom(cursorPos))
     if winner == 'white':
-        print("Winner: white".rjust(51))
+        print("Winner: white".rjust(45))
     print(f"                                   {dice if currentPlayer.color =='white' else ''}")
-    print(f"    OFF: {players['white'].tilesTakenOut}")
+    print(f"    OFF: {players['white'].tilesTakenOut}", end='')    
+    print(illegalMessage if whiteIllegal else '')
     print(f"   Pip: {pipCountWhite}")
     print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')
     print("[U] = Undo")
