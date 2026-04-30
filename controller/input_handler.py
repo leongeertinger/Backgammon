@@ -1,11 +1,11 @@
 import sys
 
-def getKey():
-    if sys.platform.startswith('win'):
+def getKey() -> str:
+    if sys.platform.startswith('win'): #For windows users
         import msvcrt
         return msvcrt.getwch()
 
-    else:
+    else: #For mac and or linux users
         import tty
         import termios
 

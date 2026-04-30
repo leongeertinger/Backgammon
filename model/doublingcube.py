@@ -1,9 +1,12 @@
+from model.player import Player
+
+
 class DoublingCube:
     def __init__(self):
         self.value = 1
-        self.playerLastDoubled = None
+        self.playerLastDoubled: Player | None = None
 
-    def double(self, player):
+    def double(self, player: Player) -> None:
         if player == self.playerLastDoubled:
             return
         if self.value == 1:
