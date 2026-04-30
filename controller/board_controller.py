@@ -42,6 +42,15 @@ class BoardController:
         os.system('cls' if os.name == 'nt' else 'clear')
     
     def _moveCursor(self, key: str) -> None:
+        if key == "\x1b[D":
+            key = "a"
+        elif key == "\x1b[C":
+            key = "d"
+        elif key == "\x1b[B":
+            key = "s"
+        elif key == "\x1b[A":
+            key = "w"
+
         if key in navigation[self.cursorPosition]:
             self.cursorPosition = navigation[self.cursorPosition][key]
 
@@ -388,6 +397,7 @@ class BoardController:
                         self.board.getCurrentPipCount, self.getWinner)
             player = self._requirePlayer()
             key: str = getKey().lower()
+            
             if key in ('w', 'a', 's', 'd'):
                 self._moveCursor(key)
                 player.showIllegalMoveMessage = False
@@ -400,7 +410,7 @@ class BoardController:
                 self._undo()
             elif key in ('\r', '\n') and not self.remainingMoves:
                 self._endTurn()
-            elif key in ('\x1B', '\033'):
+            elif key in ('\x1b', '\033', '\x03'):
                 self.running = False
         
 

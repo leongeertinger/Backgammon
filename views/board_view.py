@@ -4,7 +4,7 @@ from model.player import Player
 
 
 def _getTileColor(tile):
-    return ' ●● ' if tile.color == 'white' else ' ○○ ' 
+    return '\x1b[37m ◖◗ \x1b[0m' if tile.color == 'white' else '\x1b[31m ◖◗ \x1b[0m' 
 
 def _getColumn(board, position, fromTop = False, height = 5):
     tiles = board.getTilesAt(position)
