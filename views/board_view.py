@@ -1,4 +1,3 @@
-from types import MethodType
 from model.board import Board
 from model.doublingcube import DoublingCube
 from model.player import Player
@@ -41,10 +40,10 @@ def _renderCursorBottom(cursorPos):
             cursorRow += "  ▲  " if pos == cursorPos else "     "
     return cursorRow
 def renderBoard(board: Board, players: dict[str, Player], 
-                getCurrentPlayer: MethodType, cursorPos: int, 
+                getCurrentPlayer, cursorPos: int, 
                 cube: DoublingCube, dice: list[int], firstDiceWhite: int | None, 
-                firstDiceBlack: int | None, getPipCount: MethodType, 
-                getWinner: MethodType):
+                firstDiceBlack: int | None, getPipCount, 
+                getWinner):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]

@@ -1,4 +1,3 @@
-from typing_extensions import Self
 from model.player import Player
 from model.tile import Tile
 
@@ -33,11 +32,11 @@ class Board:
         for position, (color, amount) in startingPositions.items():
             self.board[position].extend(Tile(color) for _ in range(amount))
 
-    def clearBoard(self, board: Self) -> None:
+    def clearBoard(self, board) -> None:
         for pos in range(26):
             board.board[pos].clear()
 
-    def _setupDebugLogicBoard(self, board: Self) -> None:
+    def _setupDebugLogicBoard(self, board) -> None:
         self.clearBoard(board)
         board.board[14].append(Tile('white'))
         board.board[13].append(Tile('white'))
