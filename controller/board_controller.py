@@ -99,8 +99,10 @@ class BoardController:
         if not self._columnBelongsToCurrentPlayer(newBoard, player, fromPos):
             return None
 
-        if endGame and self._checkValidEndGameMove(newBoard, player, 
-                                                   fromPos, toPos):
+        validEndgame = self._checkValidEndGameMove(newBoard, player, fromPos, toPos)
+        validMove = self._isLegalMove(board, player, fromPos, toPos)
+
+        if endGame and validEndgame and validMove:
             newBoard.bearOffTile(fromPos)
         else:
             if 1 <= toPos <= 24 and not self._checkForBlockedColumn(newBoard, 
@@ -381,8 +383,10 @@ class BoardController:
                 continue
 
             if self.debug and not self.debugSetupDone:
+                debugDice = []
+                currentlyPlacingTile = 'white'
                 self.board._setupDebugLogicBoard(self.board)
-                self.remainingMoves = [6, 2]
+                self.remainingMoves = debugDice
                 self.usedDice = []
                 self.lastMoves = []
                 self.firstDiceWhite = None
@@ -391,7 +395,8 @@ class BoardController:
                 self.currentPlayer = self.players['white']
                 self.debugSetupDone = True
 
-            renderBoard(self.board, self.players, self.getCurrentPlayer, self.cursorPosition, 
+            renderBoard(self.board, self.players, self.debug,
+                        self.getCurrentPlayer, self.cursorPosition, 
                         self.doublingcube, self.remainingMoves, 
                         self.firstDiceWhite, self.firstDiceBlack, 
                         self.board.getCurrentPipCount, self.getWinner)
@@ -402,7 +407,11 @@ class BoardController:
                 self._moveCursor(key)
                 player.showIllegalMoveMessage = False
             elif key in ('\r', '\n') and self.remainingMoves:
-                self._selectColumn()
+                if not self.debug:
+                    self._selectColumn()
+                elif self.debug and self.debugSetupDone:
+                    tile = Tile('white') if currentlyPlacingTile == 'white' else Tile('black')
+                    self.board.addTile(self.cursorPosition, tile)
             elif key == 'r':
                 self.remainingMoves.reverse()
                 player.showIllegalMoveMessage = False
@@ -410,7 +419,9 @@ class BoardController:
                 self._undo()
             elif key in ('\r', '\n') and not self.remainingMoves:
                 self._endTurn()
-            elif key in ('\x1b', '\033', '\x03'):
+            elif key == 'x':
+                self.debug = not self.debug
+            elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
                 self.running = False
         
 

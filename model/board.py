@@ -36,13 +36,18 @@ class Board:
         for pos in range(26):
             board.board[pos].clear()
 
+    def addTile(self, pos: int, tile: Tile) -> None:
+        if not (0 <= pos <= 25):
+            return None
+        tiles = self.getTilesAt(pos)
+        if not tiles:
+            self.board[pos].append(tile)
+        elif tiles[-1].color == tile.color:
+            self.board[pos].append(tile)
+
+
     def _setupDebugLogicBoard(self, board) -> None:
         self.clearBoard(board)
-        board.board[14].append(Tile('white'))
-        board.board[13].append(Tile('white'))
-        board.board[8].extend(Tile('black') for _ in range(2))
-        board.board[7].extend(Tile('black') for _ in range(2))
-        board.board[5].extend(Tile('black') for _ in range(2))
 
     def getCurrentPipCount(self) -> tuple[int, int]:
         whitePipCount = 0
@@ -95,12 +100,18 @@ class Board:
             return False
 
     def checkGameState(self, player: Player) -> bool:
+        if self.checkBarredCheckers(player):
+            return False
         zoneOne = self.getColorsInZone(1)
+        zoneTwo = self.getColorsInZone(2)
+        zoneThree = self.getColorsInZone(3)
         zoneFour = self.getColorsInZone(4)
-        if player.color == 'white': 
-            return zoneOne['white'] + player.tilesTakenOut == 15
+        if player.color == 'white':
+            sumOfTiles = zoneTwo['white'] + zoneThree['white'] + zoneFour['white']
+            return sumOfTiles == 0
         elif player.color == 'black':
-            return zoneFour['black'] + player.tilesTakenOut == 15
+            sumOfTiles = zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
+            return sumOfTiles == 0
         return False
 
 

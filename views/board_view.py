@@ -4,7 +4,7 @@ from model.player import Player
 
 
 def _getTileColor(tile):
-    return '\x1b[37m ◖◗ \x1b[0m' if tile.color == 'white' else '\x1b[31m ◖◗ \x1b[0m' 
+    return ' ◖◗ ' if tile.color == 'white' else '\x1b[31m ◖◗ \x1b[0m' 
 
 def _getColumn(board, position, fromTop = False, height = 5):
     tiles = board.getTilesAt(position)
@@ -39,8 +39,8 @@ def _renderCursorBottom(cursorPos):
         else:
             cursorRow += "  ▲  " if pos == cursorPos else "     "
     return cursorRow
-def renderBoard(board: Board, players: dict[str, Player], 
-                getCurrentPlayer, cursorPos: int, 
+def renderBoard(board: Board, players: dict[str, Player],
+                debug: bool, getCurrentPlayer, cursorPos: int, 
                 cube: DoublingCube, dice: list[int], firstDiceWhite: int | None, 
                 firstDiceBlack: int | None, getPipCount, 
                 getWinner):
@@ -77,7 +77,7 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"   Pip: {pipCountBlack}")
     print(f"    OFF: {players['black'].tilesTakenOut}", end='')    
     print(illegalMessage if blackIllegal else '')
-    print(f"                                   {dice if currentPlayer.color == 'black' else ''}")
+    print(f"                                   {dice if currentPlayer.color == 'black' else ''}".center(40))
     if winner == 'black':
         print("Winner: black".rjust(45))
     print(_renderCursorTop(cursorPos))
@@ -107,11 +107,18 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"    OFF: {players['white'].tilesTakenOut}", end='')    
     print(illegalMessage if whiteIllegal else '')
     print(f"   Pip: {pipCountWhite}")
-    print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')
-    print("[U] = Undo")
-    print("[R] = Reverse order of dice".rjust(45), end=' | ')
-    print("[E] = Double")
-    print("[Enter] = Select piece to move".rjust(45), end=' | ')
-    print("[ESC] = Quit")
+    if not debug:
+        print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')
+        print("[U] = Undo")
+        print("[R] = Reverse order of dice".rjust(45), end=' | ')
+        print("[E] = Double(not working)")
+        print("[Enter] = Select piece to move".rjust(45), end=' | ')
+        print("[ESC] = Quit")
+        print("[X] = Debug/Sandbox mode".rjust(45), end= ' | \n')
+    elif debug:
+        print("[1 - 2] = Switch to placing white or black pieces".rjust(45), end=' | \n')
+        print("[Enter] = Place piece".rjust(45), end=' | ')
+        print("[C] = Clear board")
+        print("[X] = Exit from debug/sandbox mode", end=' | ')
 
 
