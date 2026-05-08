@@ -6,6 +6,7 @@ from controller.input_handler import getKey
 from model.doublingcube import DoublingCube
 from model.player import Player
 from model.navigation import navigation
+from controller.debug_input_controller import DebugController
 from copy import deepcopy
 import os
 
@@ -31,6 +32,19 @@ class BoardController:
         self.debugSetupDone = False
         self.startingRound = True
         self.running = True
+        self.debugInputController = DebugController(self)
+    
+    def _resetController(self, board: Board):
+        board.clearBoard(board)
+        board._populateBoard()
+        self.usedDice = []
+        self.lastMoves = []
+        self.remainingMoves = []
+        self.firstDiceWhite = None
+        self.firstDiceBlack = None
+        self.startingRound = True
+        self.currentPlayer = None
+
 
     def _requirePlayer(self) -> Player: #Make sure currenplayer is not None during runtime
         #after it has been set the first time.
@@ -376,6 +390,7 @@ class BoardController:
 
     def start(self) -> None:
         while self.running:
+            debug = self.debug == True and self.debugSetupDone == True
             self._clearScreen()
             if self.startingRound:
                 self._rollStartingDice()
@@ -384,13 +399,9 @@ class BoardController:
 
             if self.debug and not self.debugSetupDone:
                 debugDice = []
-                currentlyPlacingTile = 'white'
                 self.board._setupDebugLogicBoard(self.board)
                 self.remainingMoves = debugDice
-                self.usedDice = []
-                self.lastMoves = []
-                self.firstDiceWhite = None
-                self.firstDiceBlack = None
+                self._resetController(self.board)
                 self.startingRound = False
                 self.currentPlayer = self.players['white']
                 self.debugSetupDone = True
@@ -406,23 +417,26 @@ class BoardController:
             if key in ('w', 'a', 's', 'd'):
                 self._moveCursor(key)
                 player.showIllegalMoveMessage = False
-            elif key in ('\r', '\n') and self.remainingMoves:
-                if not self.debug:
+                
+            if debug:
+                self.debugInputController.handleDebugInput(key)
+            else:
+                if key in ('\r', '\n') and self.remainingMoves:
                     self._selectColumn()
-                elif self.debug and self.debugSetupDone:
-                    tile = Tile('white') if currentlyPlacingTile == 'white' else Tile('black')
-                    self.board.addTile(self.cursorPosition, tile)
-            elif key == 'r':
-                self.remainingMoves.reverse()
-                player.showIllegalMoveMessage = False
-            elif key == 'u':
-                self._undo()
-            elif key in ('\r', '\n') and not self.remainingMoves:
-                self._endTurn()
-            elif key == 'x':
-                self.debug = not self.debug
-            elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
-                self.running = False
+                elif key == 'r':
+                    self.remainingMoves.reverse()
+                    player.showIllegalMoveMessage = False
+                elif key == 'u':
+                    self._undo()
+                elif key in ('\r', '\n') and not self.remainingMoves:
+                    self._endTurn()
+                elif key == 'x':
+                    self.debug = True
+                elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
+                    self.running = False
+
+            
+
         
 
 
