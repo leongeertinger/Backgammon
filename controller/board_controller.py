@@ -380,11 +380,15 @@ class BoardController:
         return self.currentPlayer
 
     def getWinner(self) -> str | None:
-        white = self.players['white']
-        black = self.players['black']
-        if white.tilesTakenOut == 15:
+        zoneOne = self.board.getColorsInZone(1)
+        zoneTwo = self.board.getColorsInZone(2)
+        zoneThree = self.board.getColorsInZone(3)
+        zoneFour = self.board.getColorsInZone(4)
+        sumOfTilesWhite = zoneOne['white'] + zoneTwo['white'] + zoneThree['white'] + zoneFour['white']
+        sumOfTilesBlack = zoneFour['black'] + zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
+        if sumOfTilesWhite == 0:
             return 'white'
-        elif black.tilesTakenOut == 15:
+        elif sumOfTilesBlack == 0:
             return 'black'
         return None
 
@@ -407,9 +411,9 @@ class BoardController:
                 self.debugSetupDone = True
 
             renderBoard(self.board, self.players, self.debug,
+                        self.debugInputController,
                         self.getCurrentPlayer, self.cursorPosition, 
-                        self.doublingcube, self.remainingMoves, 
-                        self.firstDiceWhite, self.firstDiceBlack, 
+                        self.doublingcube, self.remainingMoves,
                         self.board.getCurrentPipCount, self.getWinner)
             player = self._requirePlayer()
             key: str = getKey().lower()

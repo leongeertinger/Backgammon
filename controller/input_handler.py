@@ -31,7 +31,7 @@ def getKey() -> str:
             tty.setraw(fd)
             
             key = sys.stdin.read(1)
-
+            
             if key == "\x1b":
                 nextChars = sys.stdin.read(2)
 

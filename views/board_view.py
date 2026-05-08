@@ -40,10 +40,10 @@ def _renderCursorBottom(cursorPos):
             cursorRow += "  ▲  " if pos == cursorPos else "     "
     return cursorRow
 def renderBoard(board: Board, players: dict[str, Player],
-                debug: bool, getCurrentPlayer, cursorPos: int, 
-                cube: DoublingCube, dice: list[int], firstDiceWhite: int | None, 
-                firstDiceBlack: int | None, getPipCount, 
-                getWinner):
+                debug: bool, debugInputController,
+                getCurrentPlayer, cursorPos: int, 
+                cube: DoublingCube, dice: list[int], 
+                getPipCount, getWinner):
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]
@@ -116,9 +116,15 @@ def renderBoard(board: Board, players: dict[str, Player],
         print("[ESC] = Quit")
         print("[X] = Debug/Sandbox mode".rjust(45), end= ' | \n')
     elif debug:
-        print("[1 - 2] = Switch to placing white or black pieces".rjust(45), end=' | \n')
-        print("[Enter] = Place piece".rjust(45), end=' | ')
+        print("==============[Sandbox mode]==============".rjust(60))
+        print("[1 - 2] = Switch to placing white or black pieces".rjust(62), end='')
+        print(f"  [{debugInputController.currentlyPlacingTile}]")
+        print("[3 - 4] = Change value of dice".rjust(43))
+        print("[Backspace] = Remove checker/tile".rjust(46))
+        print("[Enter] = Place piece".rjust(34), end=' | ')
         print("[C] = Clear board")
-        print("[X] = Exit from debug/sandbox mode", end=' | ')
+        print("[F] = Change current player".rjust(40))
+        print("[X] = Exit from debug/sandbox mode".rjust(47))
+        print("[ESC] = Quit".rjust(25))
 
 
