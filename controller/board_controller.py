@@ -421,6 +421,9 @@ class BoardController:
             if key in ('w', 'a', 's', 'd'):
                 self._moveCursor(key)
                 player.showIllegalMoveMessage = False
+
+            if key == 'i':
+                player.showKeybindHints = not player.showKeybindHints
                 
             if debug:
                 self.debugInputController.handleDebugInput(key)

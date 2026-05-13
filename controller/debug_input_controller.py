@@ -4,7 +4,8 @@ class DebugController:
     def __init__(self, boardController) -> None:
         self.currentlyPlacingTile = 'white'
         self.boardController = boardController
-    def handleDebugInput(self, key: str):    
+    
+    def handleDebugInput(self, key: str) -> None:    
         if key =="1":
             self.currentlyPlacingTile = 'white' 
         elif key == "2":
@@ -17,7 +18,8 @@ class DebugController:
                 self.boardController.remainingMoves[0] = (1 + currentDice % 6)
             if self.checkForDuplicateDice(self.boardController.remainingMoves):
                 self.boardController.remainingMoves = [
-                        self.boardController.remainingMoves[0] for _ in range(4)]
+                        self.boardController.remainingMoves[0] for _ in range(4)
+                        ]
             else:
                 self.boardController.remainingMoves = self.boardController.remainingMoves[:2]
         elif key == "4":
@@ -30,7 +32,8 @@ class DebugController:
                 self.boardController.remainingMoves[1] = (1 + currentDice % 6)
             if self.checkForDuplicateDice(self.boardController.remainingMoves):
                 self.boardController.remainingMoves = [
-                        self.boardController.remainingMoves[0] for _ in range(4)]
+                        self.boardController.remainingMoves[0] for _ in range(4)
+                        ]
             else:
                 self.boardController.remainingMoves = self.boardController.remainingMoves[:2]
                 
@@ -57,7 +60,7 @@ class DebugController:
         elif key in ('\x1b', '\033', '\x03'):
             self.boardController.running = False
     
-    def checkForDuplicateDice(self, dice: list) -> bool:
+    def checkForDuplicateDice(self, dice: list[int] | list) -> bool:
         if len(dice) >= 2:
             if dice[0] == dice[1]:
                 return True

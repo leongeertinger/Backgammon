@@ -44,6 +44,9 @@ def renderBoard(board: Board, players: dict[str, Player],
                 getCurrentPlayer, cursorPos: int, 
                 cube: DoublingCube, dice: list[int], 
                 getPipCount, getWinner):
+
+    showKeybindHints = False
+
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
     bottomRightPositions = [7,8, 9, 10, 11, 12]
@@ -78,7 +81,7 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"    OFF: {players['black'].tilesTakenOut}", end='')    
     print(illegalMessage if blackIllegal else '')
     print(f"                                   {dice if currentPlayer.color == 'black' else ''}".center(40))
-    if winner == 'black':
+    if winner == 'black' and not debug:
         print("Winner: black".rjust(45))
     print(_renderCursorTop(cursorPos))
     print("    ┌────┬────┬────┬────┬────┬────┬────────┬────┬────┬────┬────┬────┬────┐")
@@ -101,13 +104,16 @@ def renderBoard(board: Board, players: dict[str, Player],
     print("    │  1 │  2 │  3 │  4 │  5 │  6 │        │  7 │  8 │  9 │ 10 │ 11 │ 12 │")
     print("    └────┴────┴────┴────┴────┴────┴────────┴────┴────┴────┴────┴────┴────┘")
     print(_renderCursorBottom(cursorPos))
-    if winner == 'white':
+    if winner == 'white' and not debug:
         print("Winner: white".rjust(45))
     print(f"                                   {dice if currentPlayer.color =='white' else ''}")
     print(f"    OFF: {players['white'].tilesTakenOut}", end='')    
     print(illegalMessage if whiteIllegal else '')
-    print(f"   Pip: {pipCountWhite}")
-    if not debug:
+    print(f"   Pip: {pipCountWhite}", end='')
+    
+    print("[i] = Show/hide controls".rjust(40))
+    
+    if not debug and currentPlayer.showKeybindHints:
         print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')
         print("[U] = Undo")
         print("[R] = Reverse order of dice".rjust(45), end=' | ')
@@ -117,14 +123,15 @@ def renderBoard(board: Board, players: dict[str, Player],
         print("[X] = Debug/Sandbox mode".rjust(45), end= ' | \n')
     elif debug:
         print("==============[Sandbox mode]==============".rjust(60))
-        print("[1 - 2] = Switch to placing white or black pieces".rjust(62), end='')
-        print(f"  [{debugInputController.currentlyPlacingTile}]")
-        print("[3 - 4] = Change value of dice".rjust(43))
-        print("[Backspace] = Remove checker/tile".rjust(46))
-        print("[Enter] = Place piece".rjust(34), end=' | ')
-        print("[C] = Clear board")
-        print("[F] = Change current player".rjust(40))
-        print("[X] = Exit from debug/sandbox mode".rjust(47))
-        print("[ESC] = Quit".rjust(25))
+        if currentPlayer.showKeybindHints:
+            print("[1 - 2] = Switch to placing white or black pieces".rjust(62), end='')
+            print(f"  [{debugInputController.currentlyPlacingTile}]")
+            print("[3 - 4] = Change value of dice".rjust(43))
+            print("[Backspace] = Remove checker/tile".rjust(46))
+            print("[Enter] = Place piece".rjust(34), end=' | ')
+            print("[C] = Clear board")
+            print("[F] = Change current player".rjust(40))
+            print("[X] = Exit from debug/sandbox mode".rjust(47))
+            print("[ESC] = Quit".rjust(25))
 
 
