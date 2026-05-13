@@ -34,7 +34,8 @@ class BoardController:
         self.running = True
         self.debugInputController = DebugController(self)
     
-    def _resetController(self, board: Board):
+    def _resetController(self, board: Board) -> None:#Has no use yet
+        """Resets controller so a new game can be started."""
         board.clearBoard(board)
         board._populateBoard()
         self.usedDice = []
@@ -46,29 +47,25 @@ class BoardController:
         self.currentPlayer = None
 
 
-    def _requirePlayer(self) -> Player: #Make sure currenplayer is not None during runtime
-        #after it has been set the first time.
+    def _requirePlayer(self) -> Player:
+        """Guarantees that currentPlayer is not None during runtime"""
         if self.currentPlayer is None:
             raise RuntimeError('Current player has not been set yet')
         return self.currentPlayer
 
     def _clearScreen(self) -> None:
+        """Clears terminal screen based on operating system"""
         os.system('cls' if os.name == 'nt' else 'clear')
     
     def _moveCursor(self, key: str) -> None:
-        if key == "\x1b[D":
-            key = "a"
-        elif key == "\x1b[C":
-            key = "d"
-        elif key == "\x1b[B":
-            key = "s"
-        elif key == "\x1b[A":
-            key = "w"
-
+        """Moves cursor based on keyboard input and navigation map."""
         if key in navigation[self.cursorPosition]:
             self.cursorPosition = navigation[self.cursorPosition][key]
 
     def _endTurn(self) -> None:
+
+        """Ends current players turn and passes turn"""
+
         currentPlayer = self._requirePlayer()
 
         if currentPlayer.tilesTakenOut == 15:
@@ -83,6 +80,9 @@ class BoardController:
         self.remainingMoves = list(throwDice())
 
     def _undo(self) -> None:
+
+        """Undos previous moves from a 'movestack'"""
+
         if not self.lastMoves:
             return
 
@@ -108,8 +108,10 @@ class BoardController:
     def _simulateMove(self, board: Board, player: Player, move: tuple) -> Board | None:
         newBoard = deepcopy(board)
         endGame = board.checkGameState(player)
-        fromPos, toPos, die = move
+        fromPos, toPos = move[0], move[1]
         
+        """Validates and makes a move on a copy of Board class."""
+
         if not self._columnBelongsToCurrentPlayer(newBoard, player, fromPos):
             return None
 
@@ -128,15 +130,17 @@ class BoardController:
             newBoard.moveTile(fromPos, toPos)
         return newBoard
 
-    def getLegalMoveSequences(self, board: Board, player: Player, 
-                              dice: list[int]) -> list[list[tuple]]:
-        #Used to make sure all dice are used if possible
+    def getLegalMoveSequences(
+            self, board: Board, player: Player, 
+            dice: list[int]) -> list[list[tuple]]:
+        """Used to make sure the largest amount of dice are used."""
         moveSequences: list[list[tuple]] | list = []
 
-        def depthSearch(board: Board, player: Player, 
-                        remainingDice: list[int], 
-                        sequence: list[tuple]) -> None:
-
+        def depthSearch(
+                board: Board, player: Player, 
+                remainingDice: list[int], 
+                sequence: list[tuple]) -> None:
+            """Searches for all possible move sequences recursively"""
             if not remainingDice: #Basecase
                 moveSequences.append(sequence)
                 return
@@ -176,6 +180,11 @@ class BoardController:
     def getRequiredMoveSequence(self, board: Board, 
                                 player: Player, 
                                 dice: list[int]) -> list[list[tuple]]:
+
+        """First gets all possible legal move sequences. Then checks against
+        a rule that says if all sequences results in only 1 die being
+        used. The larger of the dice must be used"""
+
         moveSequences = self.getLegalMoveSequences(board, player, dice)
         if not moveSequences:
             return moveSequences
@@ -196,6 +205,9 @@ class BoardController:
     def _columnBelongsToCurrentPlayer(self, board: Board, 
                                       player: Player, 
                                       position: int) -> bool:
+        """Checks if the selected column at position is housing a tile/checker
+        of current players color"""
+
         currentPlayer = player
         tiles = board.getTilesAt(position)
         if not tiles:
@@ -205,6 +217,8 @@ class BoardController:
     def _getHittableTile(self, board: Board, 
                          player: Player, 
                          position: int) -> Tile | None:
+        
+        """Checks if a tile/checker is able to be hit at position"""
 
         currentPlayer = player
         tiles = board.getTilesAt(position)
@@ -214,6 +228,11 @@ class BoardController:
             return None
 
     def _hitTile(self, board: Board, position: int) -> dict | None:
+
+        """
+        'Hits' the lone tile placed at position and moves it to its 'bar'.
+        """
+
         tiles = board.getTilesAt(position)
         if not len(tiles) == 1:
             return
@@ -235,6 +254,9 @@ class BoardController:
     def _checkForBlockedColumn(self, board: Board, 
                                player: Player, 
                                position: int) -> bool:
+        """Checks if player is trying to move onto
+        opponents 'blocked' column. Meaning a column with 2
+        or more checkers with the color of the opponent"""
 
         currentPlayer = player
         tiles = board.getTilesAt(position)
@@ -246,6 +268,8 @@ class BoardController:
     def _checkValidEndGameMove(self, board: Board, player: Player, 
                                fromPos: int, toPos: int) -> bool:
         
+        """Validates move against 'bearoff' logic"""
+
         if player.color == 'white' and toPos == 0:
             return True
 
@@ -266,6 +290,10 @@ class BoardController:
         
     def _isLegalMove(self, board: Board, player: Player, 
                      fromPos: int, toPos: int) -> bool:
+        
+        """A legal check for trying to make a move.
+        used in simulating moves and getAllLegalSingleMoves method"""
+
         barred = board.checkBarredCheckers(player)
         currentPlayerBar = 25 if player.color == 'white' else 0
         if barred and fromPos != currentPlayerBar:
@@ -288,8 +316,12 @@ class BoardController:
         #Need a canBearOff function
         return True
 
-    def getAllLegalSingleMoves(self, board: Board, player: Player, 
-                               die: int) -> list[tuple]:
+    def getAllLegalSingleMoves(
+            self, board: Board, player: Player, 
+            die: int) -> list[tuple]:
+        """Gets all moves that are possible with a single die
+        also used when calculating all possible moves"""
+
         moves = []
 
         barred = board.checkBarredCheckers(player)
@@ -305,6 +337,10 @@ class BoardController:
         return moves
 
     def _selectColumn(self) -> None:
+        """
+        Tries to move piece based on the current position
+        of cursor. Validates move to see if it is legal.
+        """
         if not self.remainingMoves:
             return
 
@@ -360,6 +396,8 @@ class BoardController:
         currentPlayer.showIllegalMoveMessage = False
         
     def _rollStartingDice(self) -> None:
+        """Rolls starting round dice and calculates 
+        starting playerbased on the outcome"""
         while True:
             whiteDie = throwDice()[0]
             blackDie = throwDice()[0]
@@ -377,15 +415,22 @@ class BoardController:
                 return
 
     def getCurrentPlayer(self) -> Player | None:
+        """A getter for current player"""
         return self.currentPlayer
 
     def getWinner(self) -> str | None:
+        """
+        Calculates winner based on number 
+        of checkers left in each of 4 zones
+        """
         zoneOne = self.board.getColorsInZone(1)
         zoneTwo = self.board.getColorsInZone(2)
         zoneThree = self.board.getColorsInZone(3)
         zoneFour = self.board.getColorsInZone(4)
         sumOfTilesWhite = zoneOne['white'] + zoneTwo['white'] + zoneThree['white'] + zoneFour['white']
         sumOfTilesBlack = zoneFour['black'] + zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
+        #This way of calculating winner based on sumOfTiles makes it possible
+        #to set up your own homegame with different amount and placing of starting checkers.
         if sumOfTilesWhite == 0:
             return 'white'
         elif sumOfTilesBlack == 0:
@@ -393,6 +438,7 @@ class BoardController:
         return None
 
     def start(self) -> None:
+        """Starts the renderloop, handles input and checks state"""
         while self.running:
             debug = self.debug == True and self.debugSetupDone == True
             self._clearScreen()
