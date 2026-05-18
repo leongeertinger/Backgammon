@@ -99,7 +99,7 @@ class Board:
         else:
             return False
 
-    def checkGameState(self, player: Player) -> bool:
+    def checkForEndgame(self, player: Player) -> bool:
         if self.checkBarredCheckers(player):
             return False
         zoneOne = self.getColorsInZone(1)
@@ -113,6 +113,20 @@ class Board:
             sumOfTiles = zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
             return sumOfTiles == 0
         return False
+
+    def checkForGammonWin(self, winningPlayer: Player, players: dict[str, Player]):
+        winningColor = winningPlayer.color
+        opponent = players['white'] if winningColor == 'white' else players['black']
+        zoneOne = self.getColorsInZone(1)
+        zoneFour = self.getColorsInZone(4)
+        playersHomeZone = zoneOne if winningColor == 'white' else zoneFour
+
+        if opponent.tilesTakenOut == 0 and playersHomeZone[opponent.color] == 0:
+            return 2
+        elif opponent.tilesTakenOut == 0 and playersHomeZone[opponent.color] != 0:
+            return 3
+        return 1
+
 
 
 

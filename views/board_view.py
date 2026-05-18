@@ -43,9 +43,8 @@ def renderBoard(board: Board, players: dict[str, Player],
                 debug: bool, debugInputController,
                 getCurrentPlayer, cursorPos: int, 
                 cube: DoublingCube, dice: list[int], 
-                getPipCount, getWinner):
+                getPipCount, getWinner, firstToWins: int):
 
-    showKeybindHints = False
 
     topLeftPositions = [24, 23, 22, 21, 20, 19]
     topRightPositions = [18, 17, 16, 15, 14, 13]
@@ -58,7 +57,7 @@ def renderBoard(board: Board, players: dict[str, Player],
     bottomBar = _getColumn(board, 25)
     
     currentPlayer = getCurrentPlayer()
-    winner = getWinner()#'white' or 'black'
+    winner = getWinner(players)#'white' or 'black'
     pipCountWhite, pipCountBlack = getPipCount()
 
     blackIllegal = (
@@ -76,8 +75,9 @@ def renderBoard(board: Board, players: dict[str, Player],
 
     for position in bottomLeftPositions + bottomRightPositions:
         bottomColumns[position] = _getColumn(board, position)
-
-    print(f"   Pip: {pipCountBlack}")
+    print(f"Wins: {players['black'].gamesWon}")
+    print(f"   Pip: {pipCountBlack}", end='')
+    print(f"First to {firstToWins} wins.".rjust(37))
     print(f"    OFF: {players['black'].tilesTakenOut}", end='')    
     print(illegalMessage if blackIllegal else '')
     print(f"                                   {dice if currentPlayer.color == 'black' else ''}".center(40))
@@ -112,6 +112,8 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"   Pip: {pipCountWhite}", end='')
     
     print("[i] = Show/hide controls".rjust(40))
+
+    print(f"Wins: {players['white'].gamesWon}")
     
     if not debug and currentPlayer.showKeybindHints:
         print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')

@@ -1,7 +1,9 @@
 from model.tile import Tile
 
 class DebugController:
-    def __init__(self, boardController) -> None:
+    def __init__(self, boardController, state) -> None:
+        self.state = state
+
         self.currentlyPlacingTile = 'white'
         self.boardController = boardController
     
@@ -58,7 +60,7 @@ class DebugController:
         elif key == "x":
             self.boardController.debug = False
         elif key in ('\x1b', '\033', '\x03'):
-            self.boardController.running = False
+            self.state.setState('main-menu')
     
     def checkForDuplicateDice(self, dice: list[int] | list) -> bool:
         if len(dice) >= 2:

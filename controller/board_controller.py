@@ -1,3 +1,4 @@
+from model import player
 from model.board import Board
 from model.tile import Tile
 from views.board_view import renderBoard
@@ -7,11 +8,23 @@ from model.doublingcube import DoublingCube
 from model.player import Player
 from model.navigation import navigation
 from controller.debug_input_controller import DebugController
+from model.stateManager import StateManager
+from model.mainmenu import MainMenu
+from controller.mainmenu_controller import MenuController
+from views.menu_view import MenuRenderer
 from copy import deepcopy
 import os
 
 class BoardController:
     def __init__(self) -> None:
+        self.state = StateManager()
+        
+        self.mainmenu = MenuController(MainMenu, self.state)
+
+        self.menuRenderer = MenuRenderer()
+
+        self.firstToWins: int = 1
+
         self.board: Board = Board()
         self.cursorPosition: int = 1
         self.remainingMoves: list[int] = []
@@ -31,8 +44,7 @@ class BoardController:
         self.debug = False
         self.debugSetupDone = False
         self.startingRound = True
-        self.running = True
-        self.debugInputController = DebugController(self)
+        self.debugInputController = DebugController(self, self.state)
     
     def _resetController(self, board: Board) -> None:#Has no use yet
         """Resets controller so a new game can be started."""
@@ -79,7 +91,7 @@ class BoardController:
         self.usedDice.clear()
         self.remainingMoves = list(throwDice())
 
-    def _undo(self) -> None:
+    def _undo(self, currentPlayer) -> None:
 
         """Undos previous moves from a 'movestack'"""
 
@@ -92,8 +104,13 @@ class BoardController:
         toPos = moveData['to']
         diceValue = moveData['dice']
         hitData = moveData['hit']
+        bearOff = moveData['bearOff']
 
-        self.board.moveTile(toPos, fromPos)
+        if bearOff:
+            self.board.addTile(fromPos, Tile(currentPlayer.color))
+            currentPlayer.tilesTakenOut -= 1
+        else:
+            self.board.moveTile(toPos, fromPos)
         self.remainingMoves.insert(0, diceValue)
 
         if hitData:
@@ -107,7 +124,7 @@ class BoardController:
     
     def _simulateMove(self, board: Board, player: Player, move: tuple) -> Board | None:
         newBoard = deepcopy(board)
-        endGame = board.checkGameState(player)
+        endGame = board.checkForEndgame(player)
         fromPos, toPos = move[0], move[1]
         
         """Validates and makes a move on a copy of Board class."""
@@ -303,7 +320,7 @@ class BoardController:
             return False
         
 
-        endGame = board.checkGameState(player)
+        endGame = board.checkForEndgame(player)
 
         if not endGame and not (1 <= toPos <= 24): 
             return False
@@ -353,7 +370,7 @@ class BoardController:
             self._endTurn()
             return
 
-        endGame = self.board.checkGameState(currentPlayer)
+        endGame = self.board.checkForEndgame(currentPlayer)
 
         diceValue = self.remainingMoves[0]
         fromPos = self.cursorPosition
@@ -378,18 +395,21 @@ class BoardController:
         if 1 <= toPos <= 24 and self._getHittableTile(self.board, currentPlayer, toPos):
             hitData = self._hitTile(self.board, toPos)
         
+        bearOff = False
         if endGame and (toPos <= 0 or toPos >= 25):
                 self.board.bearOffTile(fromPos)
+                bearOff = True
                 currentPlayer.tilesTakenOut += 1
         else: 
             self.board.moveTile(fromPos, toPos)
 
         moveData = {
-                'from': fromPos,
-                'to': toPos,
-                'dice': diceValue,
-                'hit': hitData
-                }
+            'from': fromPos,
+            'to': toPos,
+            'dice': diceValue,
+            'hit': hitData,
+            'bearOff': bearOff
+            }
 
         self.usedDice.append(self.remainingMoves.pop(0))
         self.lastMoves.append(moveData)
@@ -398,7 +418,7 @@ class BoardController:
     def _rollStartingDice(self) -> None:
         """Rolls starting round dice and calculates 
         starting playerbased on the outcome"""
-        while True:
+        while True: #Change to something more readable
             whiteDie = throwDice()[0]
             blackDie = throwDice()[0]
 
@@ -418,10 +438,11 @@ class BoardController:
         """A getter for current player"""
         return self.currentPlayer
 
-    def getWinner(self) -> str | None:
+    def getWinner(self, players: dict[str, Player]) -> str | None:
         """
         Calculates winner based on number 
         of checkers left in each of 4 zones
+        and adds appropriate amount of wins to player
         """
         zoneOne = self.board.getColorsInZone(1)
         zoneTwo = self.board.getColorsInZone(2)
@@ -431,15 +452,31 @@ class BoardController:
         sumOfTilesBlack = zoneFour['black'] + zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
         #This way of calculating winner based on sumOfTiles makes it possible
         #to set up your own homegame with different amount and placing of starting checkers.
-        if sumOfTilesWhite == 0:
+        if sumOfTilesWhite == 0 and not self.debug:
+            self._winGame(players['white'], players)
             return 'white'
-        elif sumOfTilesBlack == 0:
+        elif sumOfTilesBlack == 0 and not self.debug:
+            self._winGame(players['black'], players)
             return 'black'
         return None
 
+    def _winGame(self, winningPlayer: Player, players) -> None:
+        if winningPlayer.gamesWon >= self.firstToWins:
+            return
+        gameIsWorth: int = self.board.checkForGammonWin(winningPlayer, players)
+        winningPlayer.gamesWon += gameIsWorth
+
+
     def start(self) -> None:
         """Starts the renderloop, handles input and checks state"""
-        while self.running:
+        while self.state.isState('main-menu'):
+            self._clearScreen()
+            self.menuRenderer.renderMenu(self.mainmenu.menu)
+            key: str = getKey().lower()
+            self.mainmenu.handleInput(key)
+            self.firstToWins = self.mainmenu.menu.points
+
+        while self.state.isState('running'):
             debug = self.debug == True and self.debugSetupDone == True
             self._clearScreen()
             if self.startingRound:
@@ -457,10 +494,12 @@ class BoardController:
                 self.debugSetupDone = True
 
             renderBoard(self.board, self.players, self.debug,
-                        self.debugInputController,
-                        self.getCurrentPlayer, self.cursorPosition, 
-                        self.doublingcube, self.remainingMoves,
-                        self.board.getCurrentPipCount, self.getWinner)
+                self.debugInputController,
+                self.getCurrentPlayer, self.cursorPosition, 
+                self.doublingcube, self.remainingMoves,
+                self.board.getCurrentPipCount, self.getWinner,
+                self.firstToWins)
+
             player = self._requirePlayer()
             key: str = getKey().lower()
             
@@ -480,13 +519,14 @@ class BoardController:
                     self.remainingMoves.reverse()
                     player.showIllegalMoveMessage = False
                 elif key == 'u':
-                    self._undo()
+                    self._undo(player)
                 elif key in ('\r', '\n') and not self.remainingMoves:
                     self._endTurn()
                 elif key == 'x':
                     self.debug = True
                 elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
-                    self.running = False
+                    self.state.setState('main-menu')
+                    self.start()
 
             
 
