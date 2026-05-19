@@ -59,6 +59,7 @@ def renderBoard(board: Board, players: dict[str, Player],
     currentPlayer: Player = getCurrentPlayer()
     winner: str = getWinner(players)#'white' or 'black'
     pipCountWhite, pipCountBlack = getPipCount()
+    
 
     blackIllegal = (
             currentPlayer.color == 'black'
@@ -80,7 +81,13 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"First to {firstToWins} wins.".rjust(37))
     print(f"    OFF: {players['black'].tilesTakenOut}", end='')    
     print(illegalMessage if blackIllegal else '')
-    print(f"                                   {dice if currentPlayer.color == 'black' else ''}".center(40))
+    if currentPlayer.color == 'black':
+        if not dice:
+            print("Press enter to pass turn".rjust(51))
+        else:
+            print(f"{dice}".rjust(41))
+    else:
+        print()
     if winner == 'black' and not debug:
         print("Winner: black".rjust(45))
     elif players['black'].hasDoubled:
@@ -110,7 +117,13 @@ def renderBoard(board: Board, players: dict[str, Player],
         print("Winner: white".rjust(45))
     elif players['white'].hasDoubled:
         print(f"Cube: {cube.value}")
-    print(f"                                   {dice if currentPlayer.color =='white' else ''}")
+    if currentPlayer.color == 'white':
+        if not dice:
+            print("Press enter to pass turn".rjust(51))
+        else:
+            print(f"{dice}".rjust(41))
+    else:
+        print()
     print(f"    OFF: {players['white'].tilesTakenOut}", end='')    
     print(illegalMessage if whiteIllegal else '')
     print(f"   Pip: {pipCountWhite}", end='')
@@ -120,11 +133,11 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"Wins: {players['white'].gamesWon}")
     
     if not debug and currentPlayer.showKeybindHints:
-        print("[W] [A] [S] [D] = Move cursor".rjust(45), end=' | ')
+        print("[W] [A] [S] [D] or Arrows = Move cursor".rjust(45), end=' | ')
         print("[U] = Undo")
         print("[R] = Reverse order of dice".rjust(45), end=' | ')
         print("[E] = Double(not working)")
-        print("[Enter] = Select piece to move".rjust(45), end=' | ')
+        print("[Enter] or [Space] = Select piece to move".rjust(45), end=' | ')
         print("[ESC] = Quit")
         print("[X] = Debug/Sandbox mode".rjust(45), end= ' | \n')
     elif debug:
@@ -134,7 +147,7 @@ def renderBoard(board: Board, players: dict[str, Player],
             print(f"  [{debugInputController.currentlyPlacingTile}]")
             print("[3 - 4] = Change value of dice".rjust(43))
             print("[Backspace] = Remove checker/tile".rjust(46))
-            print("[Enter] = Place piece".rjust(34), end=' | ')
+            print("[Enter] or [Space] = Place piece".rjust(34), end=' | ')
             print("[C] = Clear board")
             print("[F] = Change current player".rjust(40))
             print("[X] = Exit from debug/sandbox mode".rjust(47))

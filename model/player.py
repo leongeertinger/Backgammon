@@ -8,6 +8,6 @@ class Player:
         self.pipCount = 0
         self.tilesTakenOut = 0
         self.showIllegalMoveMessage = False
-        self.showKeybindHints = False
+        self.showKeybindHints = True
         
 
