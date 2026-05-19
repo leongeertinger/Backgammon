@@ -1,4 +1,3 @@
-from model import player
 from model.board import Board
 from model.tile import Tile
 from views.board_view import renderBoard
@@ -47,18 +46,26 @@ class BoardController:
         self.startingRound = True
         self.debugInputController = DebugController(self, self.state)
     
-    def _resetController(self, board: Board) -> None:#Has no use yet
-        """Resets controller so a new game can be started."""
+    def _resetController(self, board: Board, resetRound = False) -> None:
+        """Resets controller so a new game can be started.
+        is called by resetRound method"""
         board.clearBoard(board)
         board._populateBoard()
+        self.cursorPosition = 1
         self.usedDice = []
         self.lastMoves = []
         self.remainingMoves = []
         self.firstDiceWhite = None
         self.firstDiceBlack = None
-        self.startingRound = True
         self.currentPlayer = None
-
+        if resetRound:
+            self.doublingcube = DoublingCube()
+            self.gameWon = False
+            self.startingRound = True
+            self._rollStartingDice()
+            for player in self.players.values():
+                player.tilesTakenOut = 0
+                player.showIllegalMoveMessage = False
 
     def _requirePlayer(self) -> Player:
         """Guarantees that currentPlayer is not None during runtime"""
@@ -461,7 +468,7 @@ class BoardController:
             return 'black'
         return None
 
-    def _winGame(self, winningPlayer: Player, players) -> None:
+    def _winGame(self, winningPlayer: Player, players: dict[str, Player]) -> None:
         if winningPlayer.gamesWon >= self.firstToWins:
             return
         gameIsWorth: int = self.board.getWinningPoints(winningPlayer, players)
@@ -478,7 +485,7 @@ class BoardController:
             self.mainmenu.handleInput(key)
             self.firstToWins = self.mainmenu.menu.points
 
-        while self.state.isState('running') and not self.gameWon:
+        while self.state.isState('running'):
             debug = self.debug == True and self.debugSetupDone == True
             self._clearScreen()
             if self.startingRound:
@@ -505,6 +512,9 @@ class BoardController:
             player = self._requirePlayer()
             key: str = getKey().lower()
             
+            if self.gameWon:
+                self._resetController(self.board, resetRound=True)
+                
             if key in ('w', 'a', 's', 'd'):
                 self._moveCursor(key)
                 player.showIllegalMoveMessage = False

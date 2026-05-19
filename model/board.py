@@ -114,7 +114,7 @@ class Board:
             return sumOfTiles == 0
         return False
 
-    def getWinningPoints(self, winningPlayer: Player, players: dict[str, Player]):
+    def getWinningPoints(self, winningPlayer: Player, players: dict[str, Player]) -> int:
         winningColor = winningPlayer.color
 
         opponent = players['black'] if winningColor == 'white' else players['white']
@@ -134,6 +134,8 @@ class Board:
         #Backgammon win.
         elif playersHomeZone[opponent.color] != 0 or barHasCheckers:
             return 3
+        else:
+            return 0
     
 
 
