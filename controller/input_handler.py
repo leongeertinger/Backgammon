@@ -36,10 +36,10 @@ def getKey() -> str:
                 nextChars = sys.stdin.read(2)
 
                 arrowMap = {
-                    "[A": "w",
-                    "[B": "s",
-                    "[C": "d",
-                    "[D": "a"
+                    "[A": "w", "OA": "w",
+                    "[B": "s", "OB": "s",
+                    "[C": "d", "OC": "d",
+                    "[D": "a", "OD": "a"
                     }
                 if nextChars in arrowMap:
                     return arrowMap[nextChars]

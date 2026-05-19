@@ -53,11 +53,11 @@ def renderBoard(board: Board, players: dict[str, Player],
 
     topColumns = {}
     bottomColumns = {}
-    topBar = _getColumn(board, 0, fromTop=True)
-    bottomBar = _getColumn(board, 25)
+    topBar = _getColumn(board, 0, fromTop=False)
+    bottomBar = _getColumn(board, 25, fromTop=True)
     
-    currentPlayer = getCurrentPlayer()
-    winner = getWinner(players)#'white' or 'black'
+    currentPlayer: Player = getCurrentPlayer()
+    winner: str = getWinner(players)#'white' or 'black'
     pipCountWhite, pipCountBlack = getPipCount()
 
     blackIllegal = (
@@ -83,6 +83,8 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(f"                                   {dice if currentPlayer.color == 'black' else ''}".center(40))
     if winner == 'black' and not debug:
         print("Winner: black".rjust(45))
+    elif players['black'].hasDoubled:
+        print(f"Cube: {cube.value}")
     print(_renderCursorTop(cursorPos))
     print("    ┌────┬────┬────┬────┬────┬────┬────────┬────┬────┬────┬────┬────┬────┐")
     print("    │ 24 │ 23 │ 22 │ 21 │ 20 │ 19 │        │ 18 │ 17 │ 16 │ 15 │ 14 │ 13 │")
@@ -106,6 +108,8 @@ def renderBoard(board: Board, players: dict[str, Player],
     print(_renderCursorBottom(cursorPos))
     if winner == 'white' and not debug:
         print("Winner: white".rjust(45))
+    elif players['white'].hasDoubled:
+        print(f"Cube: {cube.value}")
     print(f"                                   {dice if currentPlayer.color =='white' else ''}")
     print(f"    OFF: {players['white'].tilesTakenOut}", end='')    
     print(illegalMessage if whiteIllegal else '')

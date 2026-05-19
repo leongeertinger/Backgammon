@@ -9,7 +9,7 @@ class MenuController:
             self.menu.moveUp()
         elif key == 's':
             self.menu.moveDown()
-        elif key in ('\r', '\n'):
+        elif key in ('\r', '\n', ' '):
             self.menu.selectOptions()
         elif key in ('\x1b', '\033', '\x03'):
             if self.state.isState('main-menu'):

@@ -114,18 +114,27 @@ class Board:
             return sumOfTiles == 0
         return False
 
-    def checkForGammonWin(self, winningPlayer: Player, players: dict[str, Player]):
+    def getWinningPoints(self, winningPlayer: Player, players: dict[str, Player]):
         winningColor = winningPlayer.color
-        opponent = players['white'] if winningColor == 'white' else players['black']
+
+        opponent = players['black'] if winningColor == 'white' else players['white']
+        opponentBar = 25 if opponent.color == 'white' else 0
+        barHasCheckers = len(self.getTilesAt(opponentBar)) > 0
+
         zoneOne = self.getColorsInZone(1)
         zoneFour = self.getColorsInZone(4)
         playersHomeZone = zoneOne if winningColor == 'white' else zoneFour
-
-        if opponent.tilesTakenOut == 0 and playersHomeZone[opponent.color] == 0:
+        
+        #Regular win
+        if opponent.tilesTakenOut > 0:
+            return 1
+        #Gammon win.
+        elif playersHomeZone[opponent.color] == 0:
             return 2
-        elif opponent.tilesTakenOut == 0 and playersHomeZone[opponent.color] != 0:
+        #Backgammon win.
+        elif playersHomeZone[opponent.color] != 0 or barHasCheckers:
             return 3
-        return 1
+    
 
 
 

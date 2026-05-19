@@ -24,6 +24,7 @@ class BoardController:
         self.menuRenderer = MenuRenderer()
 
         self.firstToWins: int = 1
+        self.gameWon = False
 
         self.board: Board = Board()
         self.cursorPosition: int = 1
@@ -463,8 +464,9 @@ class BoardController:
     def _winGame(self, winningPlayer: Player, players) -> None:
         if winningPlayer.gamesWon >= self.firstToWins:
             return
-        gameIsWorth: int = self.board.checkForGammonWin(winningPlayer, players)
-        winningPlayer.gamesWon += gameIsWorth
+        gameIsWorth: int = self.board.getWinningPoints(winningPlayer, players)
+        winningPlayer.gamesWon += gameIsWorth * self.doublingcube.value
+        self.gameWon = True
 
 
     def start(self) -> None:
@@ -476,7 +478,7 @@ class BoardController:
             self.mainmenu.handleInput(key)
             self.firstToWins = self.mainmenu.menu.points
 
-        while self.state.isState('running'):
+        while self.state.isState('running') and not self.gameWon:
             debug = self.debug == True and self.debugSetupDone == True
             self._clearScreen()
             if self.startingRound:
@@ -513,14 +515,14 @@ class BoardController:
             if debug:
                 self.debugInputController.handleDebugInput(key)
             else:
-                if key in ('\r', '\n') and self.remainingMoves:
+                if key in ('\r', '\n', ' ') and self.remainingMoves:
                     self._selectColumn()
                 elif key == 'r':
                     self.remainingMoves.reverse()
                     player.showIllegalMoveMessage = False
                 elif key == 'u':
                     self._undo(player)
-                elif key in ('\r', '\n') and not self.remainingMoves:
+                elif key in ('\r', '\n', ' ') and not self.remainingMoves:
                     self._endTurn()
                 elif key == 'x':
                     self.debug = True

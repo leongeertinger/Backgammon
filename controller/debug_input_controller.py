@@ -45,7 +45,7 @@ class DebugController:
                 self.boardController.currentPlayer = self.boardController.players['black']
             else:
                 self.boardController.currentPlayer = self.boardController.players['white']
-        elif key in ("\r", "\n"):
+        elif key in ("\r", "\n", " "):
             tiles = self.boardController.board.getTilesAt(self.boardController.cursorPosition)
             if len(tiles) >= 50:
                 return
