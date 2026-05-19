@@ -49,8 +49,6 @@ class BoardController:
     def _resetController(self, board: Board, resetRound = False) -> None:
         """Resets controller so a new game can be started.
         is called by resetRound method"""
-        board.clearBoard(board)
-        board._populateBoard()
         self.cursorPosition = 1
         self.usedDice = []
         self.lastMoves = []
@@ -59,6 +57,8 @@ class BoardController:
         self.firstDiceBlack = None
         self.currentPlayer = None
         if resetRound:
+            board.clearBoard(board)
+            board._populateBoard()
             self.doublingcube = DoublingCube()
             self.gameWon = False
             self.startingRound = True
@@ -456,15 +456,16 @@ class BoardController:
         zoneTwo = self.board.getColorsInZone(2)
         zoneThree = self.board.getColorsInZone(3)
         zoneFour = self.board.getColorsInZone(4)
+        whiteBar = True if self.board.getTilesAt(25) else False
+        blackBar = True if self.board.getTilesAt(0) else False
+
         sumOfTilesWhite = zoneOne['white'] + zoneTwo['white'] + zoneThree['white'] + zoneFour['white']
         sumOfTilesBlack = zoneFour['black'] + zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
         #This way of calculating winner based on sumOfTiles makes it possible
         #to set up your own homegame with different amount and placing of starting checkers.
-        if sumOfTilesWhite == 0 and not self.debug:
-            self._winGame(players['white'], players)
+        if sumOfTilesWhite == 0 and not whiteBar and not self.debug:
             return 'white'
-        elif sumOfTilesBlack == 0 and not self.debug:
-            self._winGame(players['black'], players)
+        elif sumOfTilesBlack == 0 and not blackBar and not self.debug:
             return 'black'
         return None
 
@@ -486,6 +487,11 @@ class BoardController:
             self.firstToWins = self.mainmenu.menu.points
 
         while self.state.isState('running'):
+
+            winner: str | None = self.getWinner(self.players)
+            if winner:
+                self._winGame(self.players[winner], self.players)
+
             debug = self.debug == True and self.debugSetupDone == True
             self._clearScreen()
             if self.startingRound:
@@ -494,9 +500,6 @@ class BoardController:
                 continue
 
             if self.debug and not self.debugSetupDone:
-                debugDice = []
-                self.board._setupDebugLogicBoard(self.board)
-                self.remainingMoves = debugDice
                 self._resetController(self.board)
                 self.startingRound = False
                 self.currentPlayer = self.players['white']

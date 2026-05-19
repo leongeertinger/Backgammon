@@ -46,9 +46,6 @@ class Board:
             self.board[pos].append(tile)
 
 
-    def _setupDebugLogicBoard(self, board) -> None:
-        self.clearBoard(board)
-
     def getCurrentPipCount(self) -> tuple[int, int]:
         whitePipCount = 0
         blackPipCount = 0
@@ -128,14 +125,13 @@ class Board:
         #Regular win
         if opponent.tilesTakenOut > 0:
             return 1
-        #Gammon win.
-        elif playersHomeZone[opponent.color] == 0:
-            return 2
+        
         #Backgammon win.
-        elif playersHomeZone[opponent.color] != 0 or barHasCheckers:
+        if playersHomeZone[opponent.color] > 0 or barHasCheckers:
             return 3
         else:
-            return 0
+            #Gammon win.
+            return 2
     
 
 
