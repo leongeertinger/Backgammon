@@ -541,7 +541,7 @@ class BoardController:
                     self.debug = True
                 elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
                     self.state.setState('main-menu')
-                    self.start()
+                    return
 
             
 
