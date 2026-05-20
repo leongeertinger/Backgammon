@@ -43,7 +43,7 @@ def renderBoard(board: Board, players: dict[str, Player],
                 debug: bool, debugInputController,
                 getCurrentPlayer, cursorPos: int, 
                 cube: DoublingCube, dice: list[int], 
-                getPipCount, getWinner, firstToWins: int):
+                getPipCount, _getGameWinner, firstToWins: int):
 
 
     topLeftPositions = [24, 23, 22, 21, 20, 19]
@@ -57,7 +57,7 @@ def renderBoard(board: Board, players: dict[str, Player],
     bottomBar = _getColumn(board, 25, fromTop=True)
     
     currentPlayer: Player = getCurrentPlayer()
-    winner: str = getWinner(players)#'white' or 'black'
+    winner: str = _getGameWinner(board)#'white' or 'black'
     pipCountWhite, pipCountBlack = getPipCount()
     
 
@@ -136,10 +136,10 @@ def renderBoard(board: Board, players: dict[str, Player],
         print("[W] [A] [S] [D] or Arrows = Move cursor".rjust(45), end=' | ')
         print("[U] = Undo")
         print("[R] = Reverse order of dice".rjust(45), end=' | ')
-        print("[E] = Double(not working)")
+        print("[X] = Sandbox mode")
         print("[Enter] or [Space] = Select piece to move".rjust(45), end=' | ')
-        print("[ESC] = Quit")
-        print("[X] = Debug/Sandbox mode".rjust(45), end= ' | \n')
+        print("Hold [ESC] = Quit")
+        print("[Q] = Main Menu".rjust(46))
     elif debug:
         print("==============[Sandbox mode]==============".rjust(60))
         if currentPlayer.showKeybindHints:
@@ -147,10 +147,10 @@ def renderBoard(board: Board, players: dict[str, Player],
             print(f"  [{debugInputController.currentlyPlacingTile}]")
             print("[3 - 4] = Change value of dice".rjust(43))
             print("[Backspace] = Remove checker/tile".rjust(46))
-            print("[Enter] or [Space] = Place piece".rjust(34), end=' | ')
+            print("[Enter] or [Space] = Place piece".rjust(45), end=' | ')
             print("[C] = Clear board")
             print("[F] = Change current player".rjust(40))
-            print("[X] = Exit from debug/sandbox mode".rjust(47))
-            print("[ESC] = Quit".rjust(25))
+            print("[X] = Exit from sandbox mode".rjust(41))
+            print("Hold [ESC] = Quit".rjust(25))
 
 

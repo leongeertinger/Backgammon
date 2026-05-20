@@ -18,7 +18,7 @@ class BoardController:
     def __init__(self) -> None:
         self.state = StateManager()
         
-        self.mainmenu = MenuController(MainMenu, self.state)
+        self.mainmenu = MenuController(MainMenu, self.state, self._resetController)
 
         self.menuRenderer = MenuRenderer()
 
@@ -46,7 +46,7 @@ class BoardController:
         self.startingRound = True
         self.debugInputController = DebugController(self, self.state)
     
-    def _resetController(self, board: Board, resetRound = False) -> None:
+    def _resetController(self, resetRound = False, resetMatch = False) -> None:
         """Resets controller so a new game can be started.
         is called by resetRound method"""
         self.cursorPosition = 1
@@ -56,9 +56,9 @@ class BoardController:
         self.firstDiceWhite = None
         self.firstDiceBlack = None
         self.currentPlayer = None
-        if resetRound:
-            board.clearBoard(board)
-            board._populateBoard()
+        if resetRound or resetMatch:
+            self.board.clearBoard(self.board)
+            self.board._populateBoard()
             self.doublingcube = DoublingCube()
             self.gameWon = False
             self.startingRound = True
@@ -66,6 +66,8 @@ class BoardController:
             for player in self.players.values():
                 player.tilesTakenOut = 0
                 player.showIllegalMoveMessage = False
+                if resetMatch:
+                    player.gamesWon = 0
 
     def _requirePlayer(self) -> Player:
         """Guarantees that currentPlayer is not None during runtime"""
@@ -446,18 +448,18 @@ class BoardController:
         """A getter for current player"""
         return self.currentPlayer
 
-    def getWinner(self, players: dict[str, Player]) -> str | None:
+    def _getGameWinner(self, board: Board) -> str | None:
         """
         Calculates winner based on number 
         of checkers left in each of 4 zones
         and adds appropriate amount of wins to player
         """
-        zoneOne = self.board.getColorsInZone(1)
-        zoneTwo = self.board.getColorsInZone(2)
-        zoneThree = self.board.getColorsInZone(3)
-        zoneFour = self.board.getColorsInZone(4)
-        whiteBar = True if self.board.getTilesAt(25) else False
-        blackBar = True if self.board.getTilesAt(0) else False
+        zoneOne = board.getColorsInZone(1)
+        zoneTwo = board.getColorsInZone(2)
+        zoneThree = board.getColorsInZone(3)
+        zoneFour = board.getColorsInZone(4)
+        whiteBar = True if board.getTilesAt(25) else False
+        blackBar = True if board.getTilesAt(0) else False
 
         sumOfTilesWhite = zoneOne['white'] + zoneTwo['white'] + zoneThree['white'] + zoneFour['white']
         sumOfTilesBlack = zoneFour['black'] + zoneThree['black'] + zoneTwo['black'] + zoneOne['black']
@@ -469,6 +471,12 @@ class BoardController:
             return 'black'
         return None
 
+    def _getMatchWinner(self, players: dict[str, Player]) -> Player | None:
+        for player in players.values():
+            if player.gamesWon >= self.firstToWins:
+                return player
+        return None
+
     def _winGame(self, winningPlayer: Player, players: dict[str, Player]) -> None:
         if winningPlayer.gamesWon >= self.firstToWins:
             return
@@ -477,71 +485,82 @@ class BoardController:
         self.gameWon = True
 
 
+
     def start(self) -> None:
         """Starts the renderloop, handles input and checks state"""
-        while self.state.isState('main-menu'):
-            self._clearScreen()
-            self.menuRenderer.renderMenu(self.mainmenu.menu)
-            key: str = getKey().lower()
-            self.mainmenu.handleInput(key)
-            self.firstToWins = self.mainmenu.menu.points
+        while not self.state.isState('exit'):
+            while self.state.isState('main-menu'):
+                self._clearScreen()
+                self.menuRenderer.renderMenu(self.mainmenu.menu)
+                key: str = getKey().lower()
+                self.mainmenu.handleInput(key)
+                self.firstToWins = self.mainmenu.menu.points
 
-        while self.state.isState('running'):
+            while self.state.isState('running'):
 
-            winner: str | None = self.getWinner(self.players)
-            if winner:
-                self._winGame(self.players[winner], self.players)
+                winner: str | None = self._getGameWinner(self.board)
+                if winner:
+                    self._winGame(self.players[winner], self.players)
+                    
 
-            debug = self.debug == True and self.debugSetupDone == True
-            self._clearScreen()
-            if self.startingRound:
-                self._rollStartingDice()
-                self.startingRound = False
-                continue
-
-            if self.debug and not self.debugSetupDone:
-                self._resetController(self.board)
-                self.startingRound = False
-                self.currentPlayer = self.players['white']
-                self.debugSetupDone = True
-
-            renderBoard(self.board, self.players, self.debug,
-                self.debugInputController,
-                self.getCurrentPlayer, self.cursorPosition, 
-                self.doublingcube, self.remainingMoves,
-                self.board.getCurrentPipCount, self.getWinner,
-                self.firstToWins)
-
-            player = self._requirePlayer()
-            key: str = getKey().lower()
-            
-            if self.gameWon:
-                self._resetController(self.board, resetRound=True)
+                debug = self.debug == True and self.debugSetupDone == True
                 
-            if key in ('w', 'a', 's', 'd'):
-                self._moveCursor(key)
-                player.showIllegalMoveMessage = False
-
-            if key == 'i':
-                player.showKeybindHints = not player.showKeybindHints
+                self._clearScreen()
                 
-            if debug:
-                self.debugInputController.handleDebugInput(key)
-            else:
-                if key in ('\r', '\n', ' ') and self.remainingMoves:
-                    self._selectColumn()
-                elif key == 'r':
-                    self.remainingMoves.reverse()
+                if self.startingRound:
+                    self._rollStartingDice()
+                    self.startingRound = False
+                    continue
+
+                if self.debug and not self.debugSetupDone:
+                    self._resetController()
+                    self.startingRound = False
+                    self.currentPlayer = self.players['white']
+                    self.debugSetupDone = True
+
+                renderBoard(self.board, self.players, self.debug,
+                    self.debugInputController,
+                    self.getCurrentPlayer, self.cursorPosition, 
+                    self.doublingcube, self.remainingMoves,
+                    self.board.getCurrentPipCount, self._getGameWinner,
+                    self.firstToWins)
+
+                player = self._requirePlayer()
+                key: str = getKey().lower()
+                
+                if self.gameWon:
+                    if self._getMatchWinner(self.players):
+                        self.state.setState('main-menu')
+                        
+                    else:
+                        self._resetController(resetRound=True)
+                    
+                if key in ('w', 'a', 's', 'd'):
+                    self._moveCursor(key)
                     player.showIllegalMoveMessage = False
-                elif key == 'u':
-                    self._undo(player)
-                elif key in ('\r', '\n', ' ') and not self.remainingMoves:
-                    self._endTurn()
-                elif key == 'x':
-                    self.debug = True
-                elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
-                    self.state.setState('main-menu')
-                    return
+
+                if key == 'i':
+                    player.showKeybindHints = not player.showKeybindHints
+                    
+                if debug:
+                    self.debugInputController.handleDebugInput(key)
+                else:
+                    if key in ('\r', '\n', ' ') and self.remainingMoves:
+                        self._selectColumn()
+                    elif key == 'r':
+                        self.remainingMoves.reverse()
+                        player.showIllegalMoveMessage = False
+                    elif key == 'u':
+                        self._undo(player)
+                    elif key in ('\r', '\n', ' ') and not self.remainingMoves:
+                        self._endTurn()
+                    elif key == 'x':
+                        self.debug = True
+                    elif key == 'q':
+                        self.state.setState('main-menu')
+                    elif key in ('\x1b', '\033', '\x03'): #ESC or Ctrl+C.
+                        self.state.setState('exit')
+                        
 
             
 

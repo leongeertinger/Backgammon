@@ -1,10 +1,10 @@
 class MenuController:
-    def __init__(self, menu, state):
+    def __init__(self, menu, state, _resetController):
         
         self.state = state
-        self.menu = menu(self.state)
+        self.menu = menu(self.state, _resetController)
 
-    def handleInput(self, key: str):
+    def handleInput(self, key: str) -> None:
         if key == 'w':
             self.menu.moveUp()
         elif key == 's':
