@@ -47,8 +47,8 @@ class BoardController:
         self.debugInputController = DebugController(self, self.state)
     
     def _resetController(self, resetRound = False, resetMatch = False) -> None:
-        """Resets controller so a new game can be started.
-        is called by resetRound method"""
+        """Resets controller so a new game or a new match can be started.
+        """
         self.cursorPosition = 1
         self.usedDice = []
         self.lastMoves = []
